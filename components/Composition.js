@@ -36,7 +36,7 @@ export default function Composition() {
 
   const fetchData = async ({ songComponents }) => {
     const response = await fetch(
-      `https://45d2-65-130-165-212.ngrok-free.app/generate-song`,
+      `https://c346-65-130-165-212.ngrok-free.app/generate-song`,
       {
         method: "POST",
         headers: {
