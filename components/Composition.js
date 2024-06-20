@@ -35,15 +35,18 @@ export default function Composition() {
   const [song, setSong] = useState([]);
 
   const fetchData = async ({ songComponents }) => {
-    const response = await fetch("http://localhost:4000/generate-song", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        songComponents,
-      }),
-    });
+    const response = await fetch(
+      `https://45d2-65-130-165-212.ngrok-free.app/generate-song`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          songComponents,
+        }),
+      }
+    );
     const song = await response.json();
 
     return setSong(song);
