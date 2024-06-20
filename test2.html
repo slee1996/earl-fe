@@ -1,0 +1,130 @@
+<script>
+  console.log(window.location);
+  let testLatLong = [40.646648016859274, -111.49766554372337];
+  let letsPlay = [
+    {
+      
+    }
+  ]
+  let heberProperty = {
+    _id: "6526cc5bb2e753002db7bdf1",
+    type: "SINGLE",
+    tags: [],
+    nickname: "Autumn Estates",
+    address: {
+      full: "2365 Kalākaua Ave, Honolulu, HI 96815, United States",
+      street: "2365 Kalākaua Ave",
+      city: "Honolulu",
+      state: "HI",
+      country: "United States",
+      zipcode: "96815",
+      apt: "311",
+      lat: 40.646648016859274,
+      lng: -111.49766554372337,
+    },
+    accountId: "<accountId>",
+    publishedAddress: {
+      city: "Honolulu",
+      country: "United States",
+      full: "2365 Kalākaua Ave, Honolulu, HI 96815, United States",
+      lat: 40.646648016859274,
+      lng: -111.49766554372337,
+      state: "HI",
+      zipcode: "96815",
+    },
+  };
+  let letsEat = [
+    {
+      name: "The Hub",
+      city: "Heber",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796ebd2b6efcf269e473_thehub.webp",
+      description: [
+        "The Hub in Heber City is a bustling culinary hotspot, offering diverse flavors and a welcoming atmosphere. Nestled in the heart of Heber Valley, this vibrant establishment boasts a diverse menu featuring everything from hearty breakfast options to gourmet sandwiches, salads, and artisan pizzas. With locally sourced ingredients and a commitment to quality, each dish at The Hub is a delight.",
+      ],
+      latAndLong: [40.49411954905511, -111.41303793068843],
+    },
+    {
+      name: "Back 40 Ranch House Grill",
+      city: "Heber",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/666887596f506180b91e4233_back40ranchhousegrill.webp",
+      description: [
+        "The local Back 40 Ranch House Grill provides food made with fresh, local ingredients from Heber Valley and the surrounding area. The yurt offers a cozy environment for winter dining, and the spacious outdoor patio is a perfect setting for the summer season. Stunning views of the expansive acreage and Mount Timpanogos abound.",
+        "The original restaurant structure was a ranch house built in the fields over 80 years ago. It was moved to its current location in the late 1940s to become Heber Valley's first bar.",
+      ],
+      latAndLong: [40.522778399021085, -111.41123979999999],
+    },
+    {
+      name: "Midway Mercantile",
+      city: "Midway",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668875810e80877ec7f07d8_midwaymercantile.webp",
+      description: [
+        "Midway Mercantile is housed in a historic building and offers a charming and rustic atmosphere for diners. The restaurant specializes in farm-to-table cuisine, sourcing ingredients locally to create fresh and flavorful dishes. The menu features a variety of options, including seasonal salads, wood-fired pizzas, hearty entrees like steak and seafood, and delectable desserts.",
+        "In addition to its delicious food, it's also known for its extensive wine list, craft cocktails, and selection of local beers.",
+      ],
+      latAndLong: [40.512595403739844, -111.47046604558153],
+    },
+    {
+      name: "Lola's Street Kitchen",
+      city: "Midway",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668874647e438ae61229ed7_lolasstreetkitchen.webp",
+      description: [
+        "Lola's Street Kitchen in Midway, UT, nestled in the heart of Heber Valley, offers a charming culinary experience. With a cozy yet eclectic ambiance, Lola's blends rustic charm with modern flair. Their inventive menu showcases gourmet tacos, mouthwatering burgers, flavorful bowls, and fresh salads, all crafted with locally sourced ingredients. Whether you're dining solo or with friends, Lola's promises a warm welcome and lively atmosphere. A must-visit destination for visitors exploring Heber Valley.",
+      ],
+      latAndLong: [40.51218550740207, -111.47182573208966],
+    },
+    {
+      name: "Little India",
+      city: "Heber City",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796e30c42ffc176d08d4_littleindia.webp",
+      description: [
+        "Little India is a delightful family-owned eatery with a diverse menu featuring traditional Indian dishes, from flavorful curries and aromatic biryanis to crispy samosas and fluffy naan bread. With a focus on fresh, high-quality ingredients and traditional cooking techniques, each dish at Little India is a tantalizing journey for the taste buds.",
+      ],
+      latAndLong: [40.49282137283473, -111.41530027441841],
+    },
+    {
+      name: "Dairy Keen",
+      city: "Heber",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796e459682c199d2d4c0_dairykeen.webp",
+      description: [
+        "Dairy Keen, located in the heart of Heber, is a beloved family-friendly restaurant known for its delicious burgers, fries, and shakes. It has a nostalgic train theme, with a miniature train that runs around the ceiling of the dining area, adding to the fun and whimsical atmosphere. Dairy Keen offers a variety of menu options, including classic American fare, sandwiches, salads, and ice cream treats. It's a popular spot for locals and tourists looking for a tasty meal in a unique setting.",
+      ],
+      latAndLong: [40.505377139240935, -111.41322423394236],
+    },
+    {
+      name: "Melvin's Public House",
+      city: "Heber",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796e786eb5ccbd2f4744_melvinshouse.webp",
+      description: [
+        "Melvin's Public House is a popular restaurant, known for its cozy and inviting atmosphere, making it a favorite spot for locals and visitors alike. The restaurant features a diverse menu with a focus on American cuisine, including burgers, sandwiches, salads, and hearty entrees. Melvin's Public House also offers a selection of craft beers, wines, and cocktails to complement your meal. The friendly service and delicious food make it a great place to dine and unwind in the Heber area.",
+      ],
+      latAndLong: [40.5096925969131, -111.4136113445355],
+    },
+    {
+      name: "The Overlook",
+      city: "Park City",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796ebd2b6efcf269e466_theoverlook.webp",
+      description: [
+        "The Overlook offers a locally inspired new American cuisine with multicultural influences. The Overlook menus offer depth and a variety of choices, following the seasonality of local foods and utilizing Utah’s ingredients from the varied climate. The dishes delight with a mix of spices, textures, colors, and unique presentation. Foodies will be intrigued while enjoying familiar, approachable favorites.",
+      ],
+      latAndLong: [40.679287096117626, -111.42857360342995],
+    },
+    {
+      name: "Chick's Cafe",
+      city: "Heber",
+      imageUrl:
+        "https://uploads-ssl.webflow.com/6657488527484f40079bc3d4/6668796e98d02ef5ac2e0038_chickscafe.webp",
+      description: [
+        "Chick's Cafe is known for its cozy atmosphere and delicious comfort food. The cafe offers a variety of dishes, including hearty breakfast options, classic American burgers, sandwiches, salads, and homemade desserts. Visitors often praise the friendly service and the welcoming ambiance of Chick's Cafe, making it a popular dining spot for locals and tourists alike",
+      ],
+      latAndLong: [40.50578347655512, -111.4137013635857],
+    },
+  ];
+</script>
