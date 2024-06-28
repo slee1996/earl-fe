@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LyricRegenPopup from "./LyricRegenPopup";
 
 const userPrompts = {
   verse: "VERSE",
@@ -11,6 +12,7 @@ const userPrompts = {
 const systemPrompts = {
   popstar: "popstar",
   rapper: "rapper",
+  electropopStar: "electropopStar",
 };
 
 const ComponentDefault = {
@@ -33,10 +35,37 @@ export default function Composition() {
     },
   ]);
   const [song, setSong] = useState([]);
+  const [openPopupIndex, setOpenPopupIndex] = useState(null);
+
+  const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
+    setSong((prevSong) => {
+      const updatedSong = [...prevSong];
+      updatedSong[componentIndex].lyrics[lineIndex] = lineToSave;
+      return updatedSong;
+    });
+  };
 
   const fetchData = async ({ songComponents }) => {
     const response = await fetch(
-      `https://c346-65-130-165-212.ngrok-free.app/generate-song`,
+      `http://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          songComponents,
+        }),
+      }
+    );
+    const song = await response.json();
+
+    return setSong(song);
+  };
+
+  const fetchDataWithEnforcement = async ({ songComponents }) => {
+    const response = await fetch(
+      `http://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song-with-enforcement`,
       {
         method: "POST",
         headers: {
@@ -160,140 +189,186 @@ export default function Composition() {
     );
   };
 
-  let example = [];
-
   return (
     <div className="text-white flex flex-row">
       <div>
-        <h1>Composition</h1>
-        <button
-          className="bg-white text-black px-8 py-2 rounded-full"
-          onClick={() =>
-            fetchData({
-              songComponents: components,
-            })
-          }
-        >
-          Generate song
-        </button>
-        <button
-          className="bg-white text-black px-8 py-2 rounded-full"
-          onClick={() => {
-            setComponents((currentVal) => [...currentVal, ComponentDefault]);
-          }}
-        >
-          Add Component
-        </button>
-        {components.map((component, i) => (
-          <div key={i} className="border border-white p-10 m-5 w-80">
-            <div>
-              Line Limit:{" "}
-              <input
-                type="number"
-                value={component.lineLimit}
-                onChange={(e) => handleLineLimitChange(i, e)}
-                min="1"
-                className="bg-black text-white border border-white rounded px-2 w-12"
-              />
-            </div>
-            <div>
-              Songwriter personality:{" "}
-              <select
-                value={component.selectedSystemPrompt}
-                onChange={(e) => handleSystemPromptChange(i, e)}
-                className="bg-black text-white border border-white rounded px-2"
-              >
-                {Object.entries(systemPrompts).map(([key, value]) => (
-                  <option key={key} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              User Prompt:{" "}
-              <select
-                value={component.selectedUserPrompt}
-                onChange={(e) => handleUserPromptChange(i, e)}
-                className="bg-black text-white border border-white rounded px-2"
-              >
-                {Object.entries(userPrompts).map(([key, value]) => (
-                  <option key={key} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col justify-center items-center">
-              <h1>Meter</h1>
-              <div className="flex flex-col justify-center items-center">
-                {component.meter.map((meter, j) => (
-                  <div
-                    key={j}
-                    className="flex flex-col px-3 justify-center items-center"
-                  >
-                    <input
-                      type="range"
-                      min="1"
-                      max="16"
-                      value={meter.length}
-                      onChange={(e) => handleRangeChange(i, j, e)}
-                    />
-                    <div className="flex flex-row">
-                      {meter.map((value, k) => (
-                        <button
-                          key={k}
-                          className={
-                            value === 0
-                              ? "rotate-180 text-xl px-1 hover:bg-white hover:text-black"
-                              : "text-xl px-1 hover:bg-white hover:text-black"
-                          }
-                          onClick={() => handleMeterClick(i, j, k)}
-                        >
-                          ^
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      className={
-                        "bg-red-500 text-white px-2 py-1 rounded mt-2 disabled:bg-gray-500"
-                      }
-                      onClick={() => handleRemoveMeter(i, j)}
-                      disabled={component.meter.length === 1}
-                    >
-                      Remove Meter
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className="bg-green-500 text-white px-2 py-1 rounded mt-2"
-                  onClick={() => handleAddMeter(i)}
+        <div className="flex flex-col space-y-4 mt-4">
+          <button
+            className="bg-white text-black hover:bg-black hover:text-white hover:outline hover:outline-white px-8 py-2 rounded-full"
+            onClick={() =>
+              fetchData({
+                songComponents: components,
+              })
+            }
+          >
+            Generate song
+          </button>
+          <button
+            className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
+            onClick={() =>
+              fetchDataWithEnforcement({
+                songComponents: components,
+              })
+            }
+          >
+            Generate song with enforcement
+          </button>
+          <button
+            className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
+            onClick={() => {
+              setComponents((currentVal) => [...currentVal, ComponentDefault]);
+            }}
+          >
+            Add Component
+          </button>
+        </div>
+      </div>
+      <div>
+        <h1>Components</h1>
+        <div className="max-h-[90vh] overflow-y-scroll">
+          {components.map((component, i) => (
+            <div
+              key={i}
+              className={`border border-white p-10 m-5 w-80 hover:bg-red-600 peer component-${i.toString()} group`}
+            >
+              <div>
+                Line Limit:{" "}
+                <input
+                  type="number"
+                  value={component.lineLimit}
+                  onChange={(e) => handleLineLimitChange(i, e)}
+                  min="1"
+                  className="bg-black text-white border border-white rounded px-2 w-12"
+                />
+              </div>
+              <div>
+                Songwriter personality:{" "}
+                <select
+                  value={component.selectedSystemPrompt}
+                  onChange={(e) => handleSystemPromptChange(i, e)}
+                  className="bg-black text-white border border-white rounded px-2"
                 >
-                  Add Meter
-                </button>
+                  {Object.entries(systemPrompts).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                User Prompt:{" "}
+                <select
+                  value={component.selectedUserPrompt}
+                  onChange={(e) => handleUserPromptChange(i, e)}
+                  className="bg-black text-white border border-white rounded px-2"
+                >
+                  {Object.entries(userPrompts).map(([key, value]) => (
+                    <option key={key} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col justify-center items-center">
+                <h1>Meter</h1>
+                <div className="flex flex-col justify-center items-center">
+                  {component.meter.map((meter, j) => (
+                    <div
+                      key={j}
+                      className="flex flex-col px-3 justify-center items-center"
+                    >
+                      <input
+                        type="range"
+                        min="1"
+                        max="16"
+                        value={meter.length}
+                        onChange={(e) => handleRangeChange(i, j, e)}
+                      />
+                      <div className="flex flex-row">
+                        {meter.map((value, k) => (
+                          <button
+                            key={k}
+                            className={
+                              value === 0
+                                ? "rotate-180 text-xl px-1 hover:bg-white hover:text-black"
+                                : "text-xl px-1 hover:bg-white hover:text-black"
+                            }
+                            onClick={() => handleMeterClick(i, j, k)}
+                          >
+                            ^
+                          </button>
+                        ))}
+                        <span className="mx-4">{meter.length}</span>
+                      </div>
+                      <button
+                        className={
+                          "bg-red-500 text-white px-2 py-1 rounded mt-2 disabled:bg-gray-500"
+                        }
+                        onClick={() => handleRemoveMeter(i, j)}
+                        disabled={component.meter.length === 1}
+                      >
+                        Remove Meter
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    className="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                    onClick={() => handleAddMeter(i)}
+                  >
+                    Add Meter
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="flex flex-col justify-top items-left w-full text-left px-40">
-        <h1>song display</h1>
-        {song.length > 0
-          ? song.map((component, i) => {
-              return (
-                <div
-                  key={
-                    component.component + i.toString() + component.lyrics[0][0]
-                  }
-                >
-                  <h2 className="uppercase">{component.component}</h2>
-                  {component.lyrics.map((lyric, j) => (
-                    <p key={lyric + j.toString()}>{lyric}</p>
-                  ))}
-                </div>
-              );
-            })
-          : null}
+        <h1>Generated Song</h1>
+        <div className="max-h-[90vh] overflow-y-scroll">
+          {song.length > 0
+            ? song.map((component, componentIndex) => {
+                return (
+                  <div
+                    key={
+                      component.component +
+                      componentIndex.toString() +
+                      component.lyrics[0][0]
+                    }
+                    className="group-hover:bg-red-600"
+                  >
+                    <h2 className="uppercase">{component.component}</h2>
+                    {component.lyrics.map((lyric, lineIndex) => (
+                      <div
+                        key={lyric + lineIndex.toString()}
+                        className="group-hover:bg-red-600"
+                      >
+                        {lyric.split(" ").map((word, wordIndex) => {
+                          return (
+                            <LyricRegenPopup
+                              key={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                              lyric={lyric}
+                              word={word}
+                              lineIndex={lineIndex}
+                              componentIndex={componentIndex}
+                              lyricSwapFn={saveNewLine}
+                              componentLyrics={component.lyrics}
+                              isOpen={
+                                openPopupIndex ===
+                                `${componentIndex}-${lineIndex}-${wordIndex}`
+                              }
+                              setOpenPopupIndex={setOpenPopupIndex}
+                              popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })
+            : null}
+        </div>
       </div>
     </div>
   );
