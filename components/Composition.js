@@ -47,7 +47,7 @@ export default function Composition() {
 
   const fetchData = async ({ songComponents }) => {
     const response = await fetch(
-      `http://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song`,
+      `https://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song`,
       {
         method: "POST",
         headers: {
@@ -65,7 +65,7 @@ export default function Composition() {
 
   const fetchDataWithEnforcement = async ({ songComponents }) => {
     const response = await fetch(
-      `http://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song-with-enforcement`,
+      `https://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song-with-enforcement`,
       {
         method: "POST",
         headers: {
