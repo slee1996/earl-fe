@@ -38,6 +38,7 @@ export default function Composition({ apiUrl }) {
   const [openPopupIndex, setOpenPopupIndex] = useState(null);
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
+    const variableforcommit = "deleteme"
     setSong((prevSong) => {
       const updatedSong = [...prevSong];
       updatedSong[componentIndex].lyrics[lineIndex] = lineToSave;
