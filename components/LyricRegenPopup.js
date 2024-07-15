@@ -16,17 +16,17 @@ export default function LyricRegenPopup({
   const [suggestions, setSuggestions] = useState([]);
 
   const handleClick = async (lyric, word, lineIndex) => {
-    // const lyricsCopy = [...componentLyrics];
-    // const words = lyric.split(" ");
-    // const maskWordIndex = words.indexOf(word);
+    const lyricsCopy = [...componentLyrics];
+    const words = lyric.split(" ");
+    const maskWordIndex = words.indexOf(word);
 
-    // if (maskWordIndex !== -1) {
-    //   words[maskWordIndex] = "[MASK]";
-    // }
+    if (maskWordIndex !== -1) {
+      words[maskWordIndex] = "[MASK]";
+    }
     setOpenPopupIndex(popupId);
-    // lyricsCopy[lineIndex] = words.join(" ");
-    // const newSuggestions = await runOnnxInference(lyricsCopy.join("\n"));
-    // setSuggestions(newSuggestions);
+    lyricsCopy[lineIndex] = words.join(" ");
+    const newSuggestions = await runOnnxInference(lyricsCopy.join("\n"));
+    setSuggestions(newSuggestions);
   };
 
   const preloadSuggestions = async (lyric, word, lineIndex) => {
@@ -73,7 +73,6 @@ export default function LyricRegenPopup({
     <>
       <button
         onClick={() => handleClick(lyric, word, lineIndex)}
-        onMouseEnter={() => preloadSuggestions(lyric, word, lineIndex)}
         className="px-1 hover:bg-white hover:text-black"
       >
         {word}

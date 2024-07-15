@@ -22,7 +22,7 @@ const ComponentDefault = {
   selectedSystemPrompt: systemPrompts.popstar,
 };
 
-export default function Composition() {
+export default function Composition({ apiUrl }) {
   const [components, setComponents] = useState([
     {
       lineLimit: 8,
@@ -46,36 +46,31 @@ export default function Composition() {
   };
 
   const fetchData = async ({ songComponents }) => {
-    const response = await fetch(
-      `https://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          songComponents,
-        }),
-      }
-    );
+    console.log(process.env);
+    const response = await fetch(`${apiUrl}generate-song`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        songComponents,
+      }),
+    });
     const song = await response.json();
 
     return setSong(song);
   };
 
   const fetchDataWithEnforcement = async ({ songComponents }) => {
-    const response = await fetch(
-      `https://ec2-18-119-124-197.us-east-2.compute.amazonaws.com:4000/generate-song-with-enforcement`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          songComponents,
-        }),
-      }
-    );
+    const response = await fetch(`${apiUrl}generate-song-with-enforcement`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        songComponents,
+      }),
+    });
     const song = await response.json();
 
     return setSong(song);
