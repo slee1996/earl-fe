@@ -29,20 +29,6 @@ export default function LyricRegenPopup({
     setSuggestions(newSuggestions);
   };
 
-  const preloadSuggestions = async (lyric, word, lineIndex) => {
-    const lyricsCopy = [...componentLyrics];
-    const words = lyric.split(" ");
-    const maskWordIndex = words.indexOf(word);
-
-    if (maskWordIndex !== -1) {
-      words[maskWordIndex] = "[MASK]";
-    }
-
-    lyricsCopy[lineIndex] = words.join(" ");
-    const newSuggestions = await runOnnxInference(lyricsCopy.join("\n"));
-    setSuggestions(newSuggestions);
-  };
-
   const handleSuggestionClick = (suggestion) => {
     const words = lyric.split(" ");
     const wordIndex = words.indexOf(word);

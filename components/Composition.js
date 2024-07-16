@@ -38,7 +38,6 @@ export default function Composition({ apiUrl }) {
   const [openPopupIndex, setOpenPopupIndex] = useState(null);
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
-    const variableforcommit = "deleteme"
     setSong((prevSong) => {
       const updatedSong = [...prevSong];
       updatedSong[componentIndex].lyrics[lineIndex] = lineToSave;
@@ -185,6 +184,19 @@ export default function Composition({ apiUrl }) {
     );
   };
 
+  const copyText = (lyrics) => {
+    var textToCopy = lyrics.join("\n");
+
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(function () {
+        console.log("Text copied to clipboard");
+      })
+      .catch(function (error) {
+        console.error("Error copying text: ", error);
+      });
+  };
+
   return (
     <div className="text-white flex flex-row">
       <div>
@@ -321,6 +333,19 @@ export default function Composition({ apiUrl }) {
       </div>
       <div className="flex flex-col justify-top items-left w-full text-left px-40">
         <h1>Generated Song</h1>
+        <button
+          className="border hover:bg-white hover:text-black"
+          onClick={() =>
+            copyText(
+              song.flatMap((component) => [
+                `[${component.component.toUpperCase()}]`,
+                ...component.lyrics,
+              ])
+            )
+          }
+        >
+          copy song to clipboard
+        </button>
         <div className="max-h-[90vh] overflow-y-scroll">
           {song.length > 0
             ? song.map((component, componentIndex) => {
