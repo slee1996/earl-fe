@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LyricRegenPopup from "./LyricRegenPopup";
 import { runGpt2Worker } from "@/utils/runGpt2Worker";
 import { ChangingCharacters } from "./ChangingCharacters";
+import { SongComponent } from "./SongComponent";
+import { copyText } from "@/lib/copy-text";
 
 const userPrompts = {
   verse: "VERSE",
@@ -71,6 +73,7 @@ export default function Composition({ apiUrl }) {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify({
         songComponents,
       }),
@@ -90,6 +93,7 @@ export default function Composition({ apiUrl }) {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify({
         songComponents,
       }),
@@ -209,19 +213,6 @@ export default function Composition({ apiUrl }) {
     );
   };
 
-  const copyText = (lyrics) => {
-    var textToCopy = lyrics.join("\n");
-
-    navigator.clipboard
-      .writeText(textToCopy)
-      .then(function () {
-        console.log("Text copied to clipboard");
-      })
-      .catch(function (error) {
-        console.error("Error copying text: ", error);
-      });
-  };
-
   const addNewLine = async () => {
     setNewLineLoading(true);
 
@@ -279,113 +270,32 @@ export default function Composition({ apiUrl }) {
           >
             Generate song with enforcement
           </button>
-          <button
-            className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
-            onClick={() => {
-              setComponents((currentVal) => [...currentVal, ComponentDefault]);
-            }}
-          >
-            Add Component
-          </button>
         </div>
       </div>
       <div>
         <h1>Components</h1>
-        <div className="max-h-[90vh] overflow-y-scroll">
+        <button
+          className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
+          onClick={() => {
+            setComponents((currentVal) => [...currentVal, ComponentDefault]);
+          }}
+        >
+          Add Component
+        </button>
+        <div className="max-h-[90vh] overflow-y-scroll py-4">
           {components.map((component, i) => (
-            <div
+            <SongComponent
               key={i}
-              className={`border border-white p-10 m-5 w-80 hover:bg-red-600 peer component-${i.toString()} group`}
-            >
-              <div>
-                Line Limit:{" "}
-                <input
-                  type="number"
-                  value={component.lineLimit}
-                  onChange={(e) => handleLineLimitChange(i, e)}
-                  min="1"
-                  className="bg-black text-white border border-white rounded px-2 w-12"
-                />
-              </div>
-              <div>
-                Songwriter personality:{" "}
-                <select
-                  value={component.selectedSystemPrompt}
-                  onChange={(e) => handleSystemPromptChange(i, e)}
-                  className="bg-black text-white border border-white rounded px-2"
-                >
-                  {Object.entries(systemPrompts).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                User Prompt:{" "}
-                <select
-                  value={component.selectedUserPrompt}
-                  onChange={(e) => handleUserPromptChange(i, e)}
-                  className="bg-black text-white border border-white rounded px-2"
-                >
-                  {Object.entries(userPrompts).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col justify-center items-center">
-                <h1>Meter</h1>
-                <div className="flex flex-col justify-center items-center">
-                  {component.meter.map((meter, j) => (
-                    <div
-                      key={j}
-                      className="flex flex-col px-3 justify-center items-center"
-                    >
-                      <input
-                        type="range"
-                        min="1"
-                        max="16"
-                        value={meter.length}
-                        onChange={(e) => handleRangeChange(i, j, e)}
-                      />
-                      <div className="flex flex-row">
-                        {meter.map((value, k) => (
-                          <button
-                            key={k}
-                            className={
-                              value === 0
-                                ? "rotate-180 text-xl px-1 hover:bg-white hover:text-black"
-                                : "text-xl px-1 hover:bg-white hover:text-black"
-                            }
-                            onClick={() => handleMeterClick(i, j, k)}
-                          >
-                            ^
-                          </button>
-                        ))}
-                        <span className="mx-4">{meter.length}</span>
-                      </div>
-                      <button
-                        className={
-                          "bg-red-500 text-white px-2 py-1 rounded mt-2 disabled:bg-gray-500"
-                        }
-                        onClick={() => handleRemoveMeter(i, j)}
-                        disabled={component.meter.length === 1}
-                      >
-                        Remove Meter
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded mt-2"
-                    onClick={() => handleAddMeter(i)}
-                  >
-                    Add Meter
-                  </button>
-                </div>
-              </div>
-            </div>
+              component={component}
+              i={i}
+              handleLineLimitChange={handleLineLimitChange}
+              handleSystemPromptChange={handleSystemPromptChange}
+              handleUserPromptChange={handleUserPromptChange}
+              handleRangeChange={handleRangeChange}
+              handleMeterClick={handleMeterClick}
+              handleRemoveMeter={handleRemoveMeter}
+              handleAddMeter={handleAddMeter}
+            />
           ))}
         </div>
       </div>

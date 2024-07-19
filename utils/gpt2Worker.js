@@ -7,7 +7,7 @@ self.onmessage = async (event) => {
     const generationOutput = await generator(
       `Complete these original song lyrics: ${input}`,
       {
-        temperature: 0.8,
+        temperature: 0.1,
         repetition_penalty: 1.5,
         num_return_sequences: 1,
         no_repeat_ngram_size: 2,
