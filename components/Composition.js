@@ -247,7 +247,7 @@ export default function Composition({ apiUrl }) {
   };
 
   return (
-    <div className="text-white flex flex-row">
+    <div className="text-white flex flex-col md:flex-row">
       <div>
         <div className="flex flex-col space-y-4 mt-4">
           <button
@@ -380,7 +380,7 @@ export default function Composition({ apiUrl }) {
           ))}
         </div>
       </div>
-      <div className="flex flex-col justify-top items-left w-full text-left px-40">
+      <div className="flex flex-col justify-top items-left w-full text-left md:px-40">
         <h1>Generated Song</h1>
         <button
           className="border hover:bg-white hover:text-black"
@@ -405,7 +405,7 @@ export default function Composition({ apiUrl }) {
                       componentIndex.toString() +
                       component.lyrics[0][0]
                     }
-                    className="group-hover:bg-red-600"
+                    className="group-hover:bg-red-600 w-full"
                   >
                     <h2 className="uppercase">{component.component}</h2>
                     {component.lyrics.map((lyric, lineIndex) => {
