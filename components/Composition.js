@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LyricRegenPopup from "./LyricRegenPopup";
+import { runGpt2Worker } from "@/utils/runGpt2Worker";
 
 const userPrompts = {
   verse: "VERSE",
@@ -34,8 +35,23 @@ export default function Composition({ apiUrl }) {
       selectedUserPrompt: userPrompts.verse,
     },
   ]);
-  const [song, setSong] = useState([]);
+  const [song, setSong] = useState([
+    {
+      component: "verse",
+      lyrics: [
+        "Underneath the neon skies",
+        "Where the shadows come to play",
+        "City lights will tell their lies",
+        "People hidden, night and day",
+        "In these streets where dreams collide",
+        "Hopes are drifting, low and high",
+        "Got my heart and pride inside",
+        "Facing doubts, I reach the sky",
+      ],
+    },
+  ]);
   const [openPopupIndex, setOpenPopupIndex] = useState(null);
+  const [newLineLoading, setNewLineLoading] = useState(false);
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
@@ -195,6 +211,39 @@ export default function Composition({ apiUrl }) {
       .catch(function (error) {
         console.error("Error copying text: ", error);
       });
+  };
+
+  const addNewLine = async () => {
+    setNewLineLoading(true);
+
+    const flattenedSong = song.flatMap((component) => [
+      `[${component.component.toUpperCase()}]`,
+      ...component.lyrics,
+    ]);
+    const lastTwoElements = flattenedSong
+      .slice((-1 * flattenedSong.length) % 3)
+      .join(". ");
+
+    const newLine = await runGpt2Worker(lastTwoElements);
+
+    setSong((prevSong) => {
+      const updatedSong = [...prevSong];
+      const lastComponent = updatedSong[updatedSong.length - 1];
+
+      const cleanedNewLine = newLine
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+        .replace(/\s{2,}/g, " ");
+
+      if (!lastComponent.lyrics.includes(cleanedNewLine)) {
+        lastComponent.lyrics.push(cleanedNewLine);
+      } else {
+        console.warn("New line is already present, not adding again.");
+      }
+
+      return updatedSong;
+    });
+
+    setNewLineLoading(false);
   };
 
   return (
@@ -359,36 +408,46 @@ export default function Composition({ apiUrl }) {
                     className="group-hover:bg-red-600"
                   >
                     <h2 className="uppercase">{component.component}</h2>
-                    {component.lyrics.map((lyric, lineIndex) => (
-                      <div
-                        key={lyric + lineIndex.toString()}
-                        className="group-hover:bg-red-600"
-                      >
-                        {lyric.split(" ").map((word, wordIndex) => {
-                          return (
-                            <LyricRegenPopup
-                              key={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                              lyric={lyric}
-                              word={word}
-                              lineIndex={lineIndex}
-                              componentIndex={componentIndex}
-                              lyricSwapFn={saveNewLine}
-                              componentLyrics={component.lyrics}
-                              isOpen={
-                                openPopupIndex ===
-                                `${componentIndex}-${lineIndex}-${wordIndex}`
-                              }
-                              setOpenPopupIndex={setOpenPopupIndex}
-                              popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                            />
-                          );
-                        })}
-                      </div>
-                    ))}
+                    {component.lyrics.map((lyric, lineIndex) => {
+                      console.log(lyric);
+                      return (
+                        <div
+                          key={lyric + lineIndex.toString()}
+                          className="group-hover:bg-red-600"
+                        >
+                          {lyric.split(" ").map((word, wordIndex) => {
+                            return (
+                              <LyricRegenPopup
+                                key={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                                lyric={lyric}
+                                word={word}
+                                lineIndex={lineIndex}
+                                componentIndex={componentIndex}
+                                lyricSwapFn={saveNewLine}
+                                componentLyrics={component.lyrics}
+                                isOpen={
+                                  openPopupIndex ===
+                                  `${componentIndex}-${lineIndex}-${wordIndex}`
+                                }
+                                setOpenPopupIndex={setOpenPopupIndex}
+                                popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                              />
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })
             : null}
+          <button
+            className="border px-4 py-1 my-4 hover:bg-white hover:text-black"
+            onClick={() => addNewLine()}
+            disabled={newLineLoading}
+          >
+            {newLineLoading ? "line loading" : "add new line"}
+          </button>
         </div>
       </div>
     </div>
