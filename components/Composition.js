@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LyricRegenPopup from "./LyricRegenPopup";
 import { runGpt2Worker } from "@/utils/runGpt2Worker";
+import { ChangingCharacters } from "./ChangingCharacters";
 
 const userPrompts = {
   verse: "VERSE",
@@ -52,6 +53,7 @@ export default function Composition({ apiUrl }) {
   ]);
   const [openPopupIndex, setOpenPopupIndex] = useState(null);
   const [newLineLoading, setNewLineLoading] = useState(false);
+  const [songLoading, setSongLoading] = useState(false);
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
@@ -62,7 +64,8 @@ export default function Composition({ apiUrl }) {
   };
 
   const fetchData = async ({ songComponents }) => {
-    console.log(process.env);
+    setSongLoading(true);
+
     const response = await fetch(`${apiUrl}generate-song`, {
       method: "POST",
       headers: {
@@ -74,10 +77,14 @@ export default function Composition({ apiUrl }) {
     });
     const song = await response.json();
 
-    return setSong(song);
+    await setSong(song);
+
+    return setSongLoading(false);
   };
 
   const fetchDataWithEnforcement = async ({ songComponents }) => {
+    setSongLoading(true);
+
     const response = await fetch(`${apiUrl}generate-song-with-enforcement`, {
       method: "POST",
       headers: {
@@ -89,7 +96,9 @@ export default function Composition({ apiUrl }) {
     });
     const song = await response.json();
 
-    return setSong(song);
+    await setSong(song);
+
+    return setSongLoading(false);
   };
 
   const handleMeterClick = (i, j, k) => {
@@ -396,53 +405,65 @@ export default function Composition({ apiUrl }) {
           copy song to clipboard
         </button>
         <div className="max-h-[90vh] overflow-y-scroll">
-          {song.length > 0
-            ? song.map((component, componentIndex) => {
-                return (
-                  <div
-                    key={
-                      component.component +
-                      componentIndex.toString() +
-                      component.lyrics[0][0]
-                    }
-                    className="group-hover:bg-red-600 w-full"
-                  >
-                    <h2 className="uppercase">{component.component}</h2>
-                    {component.lyrics.map((lyric, lineIndex) => {
-                      console.log(lyric);
-                      return (
-                        <div
-                          key={lyric + lineIndex.toString()}
-                          className="group-hover:bg-red-600"
-                        >
-                          {lyric.split(" ").map((word, wordIndex) => {
-                            return (
-                              <LyricRegenPopup
-                                key={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                                lyric={lyric}
-                                word={word}
-                                lineIndex={lineIndex}
-                                componentIndex={componentIndex}
-                                lyricSwapFn={saveNewLine}
-                                componentLyrics={component.lyrics}
-                                isOpen={
-                                  openPopupIndex ===
-                                  `${componentIndex}-${lineIndex}-${wordIndex}`
-                                }
-                                setOpenPopupIndex={setOpenPopupIndex}
-                                popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                              />
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })
-            : null}
+          {song.length > 0 && !songLoading ? (
+            song.map((component, componentIndex) => {
+              return (
+                <div
+                  key={
+                    component.component +
+                    componentIndex.toString() +
+                    component.lyrics[0][0]
+                  }
+                  className="group-hover:bg-red-600 w-full"
+                >
+                  <h2 className="uppercase">{component.component}</h2>
+                  {component.lyrics.map((lyric, lineIndex) => {
+                    console.log(lyric);
+                    return (
+                      <div
+                        key={lyric + lineIndex.toString()}
+                        className="group-hover:bg-red-600"
+                      >
+                        {lyric.split(" ").map((word, wordIndex) => {
+                          return (
+                            <LyricRegenPopup
+                              key={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                              lyric={lyric}
+                              word={word}
+                              lineIndex={lineIndex}
+                              componentIndex={componentIndex}
+                              lyricSwapFn={saveNewLine}
+                              componentLyrics={component.lyrics}
+                              isOpen={
+                                openPopupIndex ===
+                                `${componentIndex}-${lineIndex}-${wordIndex}`
+                              }
+                              setOpenPopupIndex={setOpenPopupIndex}
+                              popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                  {newLineLoading ? <ChangingCharacters /> : null}
+                </div>
+              );
+            })
+          ) : songLoading ? (
+            <div className="py-12">
+              <ChangingCharacters />
+              <ChangingCharacters />
+              <ChangingCharacters />
+              <ChangingCharacters />
+              <ChangingCharacters />
+              <ChangingCharacters />
+            </div>
+          ) : null}
           <button
-            className="border px-4 py-1 my-4 hover:bg-white hover:text-black"
+            className={`border px-4 py-1 my-4 hover:bg-white hover:text-black ${
+              newLineLoading ? "bg-red-500 text-white" : ""
+            }`}
             onClick={() => addNewLine()}
             disabled={newLineLoading}
           >
