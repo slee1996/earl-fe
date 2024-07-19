@@ -1,4 +1,9 @@
 "use client";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -66,7 +71,20 @@ export const SongComponent = ({
         </select>
       </div>
       <div className="flex flex-col justify-center items-center">
-        <h1>Meter</h1>
+        <h1 className="font-semibold my-2">
+          Meter{" "}
+          <HoverCard>
+            <HoverCardTrigger className="font-light underline cursor-pointer text-blue-200">
+              ?
+            </HoverCardTrigger>
+            <HoverCardContent className="font-light">
+              Each item in the meter array represents a separate line. An up
+              facing carat represents a stressed syllable, and down represents
+              an unstressed syllable. Click on them to change the stress.
+            </HoverCardContent>
+          </HoverCard>
+        </h1>
+
         <div className="flex flex-col justify-center items-center">
           {component.meter.map((meter, j) => (
             <div

@@ -56,6 +56,8 @@ export default function Composition({ apiUrl }) {
   const [openPopupIndex, setOpenPopupIndex] = useState(null);
   const [newLineLoading, setNewLineLoading] = useState(false);
   const [songLoading, setSongLoading] = useState(false);
+  const [gpt2Temp, setGpt2Temp] = useState(0.1);
+  const [maxNewTokens, setMaxTokens] = useState(16);
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
@@ -224,7 +226,11 @@ export default function Composition({ apiUrl }) {
       .slice((-1 * flattenedSong.length) % 3)
       .join(". ");
 
-    const newLine = await runGpt2Worker(lastTwoElements);
+    const newLine = await runGpt2Worker({
+      input: lastTwoElements,
+      temperature: gpt2Temp,
+      max_new_tokens: maxNewTokens,
+    });
 
     setSong((prevSong) => {
       const updatedSong = [...prevSong];
@@ -246,12 +252,22 @@ export default function Composition({ apiUrl }) {
     setNewLineLoading(false);
   };
 
+  const handleTemperatureChange = (e) => {
+    const newTemp = parseFloat(e.target.value);
+    setGpt2Temp(newTemp);
+  };
+
+  const handleChangeNewTokens = (e) => {
+    const newMaxTokens = parseFloat(e.target.value);
+    setMaxTokens(newMaxTokens);
+  };
+
   return (
     <div className="text-white flex flex-col md:flex-row">
       <div>
         <div className="flex flex-col space-y-4 mt-4">
           <button
-            className="bg-white text-black hover:bg-black hover:text-white hover:outline hover:outline-white px-8 py-2 rounded-full"
+            className="border hover:bg-white hover:text-black"
             onClick={() =>
               fetchData({
                 songComponents: components,
@@ -261,7 +277,7 @@ export default function Composition({ apiUrl }) {
             Generate song
           </button>
           <button
-            className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
+            className="border hover:bg-white hover:text-black"
             onClick={() =>
               fetchDataWithEnforcement({
                 songComponents: components,
@@ -275,7 +291,7 @@ export default function Composition({ apiUrl }) {
       <div>
         <h1>Components</h1>
         <button
-          className="bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white hover:outline hover:outline-white"
+          className="border hover:bg-white hover:text-black px-2"
           onClick={() => {
             setComponents((currentVal) => [...currentVal, ComponentDefault]);
           }}
@@ -370,15 +386,36 @@ export default function Composition({ apiUrl }) {
               <ChangingCharacters />
             </div>
           ) : null}
-          <button
-            className={`border px-4 py-1 my-4 hover:bg-white hover:text-black ${
-              newLineLoading ? "bg-red-500 text-white" : ""
-            }`}
-            onClick={() => addNewLine()}
-            disabled={newLineLoading}
-          >
-            {newLineLoading ? "line loading" : "add new line"}
-          </button>
+          <div className="flex flex-col">
+            <button
+              className={`border px-4 py-1 my-4 hover:bg-white hover:text-black ${
+                newLineLoading ? "bg-red-500 text-white" : ""
+              }`}
+              onClick={() => addNewLine()}
+              disabled={newLineLoading}
+            >
+              {newLineLoading ? "line loading" : "add new line"}
+            </button>
+            <label>new line temperature: </label>
+            <input
+              type="range"
+              min="0"
+              max="2"
+              step="0.1"
+              value={gpt2Temp}
+              onChange={handleTemperatureChange}
+            />
+            <span>{gpt2Temp}</span>
+            <label>new line max new tokens: </label>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={maxNewTokens}
+              onChange={handleChangeNewTokens}
+            />
+            <span>{maxNewTokens}</span>
+          </div>
         </div>
       </div>
     </div>

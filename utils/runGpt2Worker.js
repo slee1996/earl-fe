@@ -1,4 +1,8 @@
-export function runGpt2Worker(input) {
+export function runGpt2Worker({
+  input,
+  temperature = 0.1,
+  max_new_tokens = 16,
+}) {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL("./gpt2Worker.js", import.meta.url));
 
@@ -17,6 +21,6 @@ export function runGpt2Worker(input) {
       worker.terminate();
     };
 
-    worker.postMessage(input);
+    worker.postMessage({ input, temperature, max_new_tokens });
   });
 }
