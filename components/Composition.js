@@ -113,6 +113,8 @@ export default function Composition({ apiUrl }) {
       cache: "no-store",
       body: JSON.stringify({
         songComponents,
+        songTitle,
+        songDescription,
       }),
     });
     const song = await response.json();
