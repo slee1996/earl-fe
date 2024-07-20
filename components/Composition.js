@@ -7,16 +7,19 @@ import { ChangingCharacters } from "./ChangingCharacters";
 import { SongComponent } from "./SongComponent";
 import { copyText } from "@/lib/copy-text";
 
-const userPrompts = {
-  verse: "VERSE",
-  chorus: "CHORUS",
-  // bridge: "BRIDGE",
-};
-
 const systemPrompts = {
   popstar: "popstar",
   rapper: "rapper",
   electropopStar: "electropopStar",
+  rockstar: "rockstar",
+  countryArtist: "countryArtist",
+  custom: "custom",
+};
+
+const userPrompts = {
+  verse: "VERSE",
+  chorus: "CHORUS",
+  bridge: "BRIDGE",
 };
 
 const ComponentDefault = {
@@ -36,6 +39,7 @@ export default function Composition({ apiUrl }) {
       ],
       selectedSystemPrompt: systemPrompts.rapper,
       selectedUserPrompt: userPrompts.verse,
+      customSystemPrompt: "",
     },
   ]);
   const [song, setSong] = useState([
@@ -58,6 +62,15 @@ export default function Composition({ apiUrl }) {
   const [songLoading, setSongLoading] = useState(false);
   const [gpt2Temp, setGpt2Temp] = useState(0.1);
   const [maxNewTokens, setMaxTokens] = useState(16);
+  const [songTitle, setSongTitle] = useState("");
+  const [songDescription, setSongDescription] = useState("");
+
+  const changeTitle = (e) => {
+    return setSongTitle(e.target.value);
+  };
+  const changeDescription = (e) => {
+    return setSongDescription(e.target.value);
+  };
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
@@ -78,6 +91,8 @@ export default function Composition({ apiUrl }) {
       cache: "no-store",
       body: JSON.stringify({
         songComponents,
+        songTitle,
+        songDescription,
       }),
     });
     const song = await response.json();
@@ -164,6 +179,17 @@ export default function Composition({ apiUrl }) {
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
         index === i ? { ...component, lineLimit: newLineLimit } : component
+      )
+    );
+  };
+
+  const handleCustomSystemPromptChange = (i, e) => {
+    const newSystemPrompt = e.target.value;
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i
+          ? { ...component, customSystemPrompt: newSystemPrompt }
+          : component
       )
     );
   };
@@ -286,6 +312,19 @@ export default function Composition({ apiUrl }) {
           >
             Generate song with enforcement
           </button>
+          <h4>Song Title</h4>
+          <input
+            className="text-black p-1"
+            placeholder="Drive It Like You Stole It"
+            value={songTitle}
+            onChange={changeTitle}
+          />
+          <h4>Song Description</h4>
+          <textarea
+            className="text-black p-1"
+            value={songDescription}
+            onChange={changeDescription}
+          />
         </div>
       </div>
       <div>
@@ -311,6 +350,7 @@ export default function Composition({ apiUrl }) {
               handleMeterClick={handleMeterClick}
               handleRemoveMeter={handleRemoveMeter}
               handleAddMeter={handleAddMeter}
+              handleCustomSystemPromptChange={handleCustomSystemPromptChange}
             />
           ))}
         </div>
@@ -396,25 +436,32 @@ export default function Composition({ apiUrl }) {
             >
               {newLineLoading ? "line loading" : "add new line"}
             </button>
-            <label>new line temperature: </label>
-            <input
-              type="range"
-              min="0"
-              max="2"
-              step="0.1"
-              value={gpt2Temp}
-              onChange={handleTemperatureChange}
-            />
-            <span>{gpt2Temp}</span>
-            <label>new line max new tokens: </label>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={maxNewTokens}
-              onChange={handleChangeNewTokens}
-            />
-            <span>{maxNewTokens}</span>
+            <h4 className="w-full text-center">New Line Settings</h4>
+            <div className="flex flex-row w-full justify-between space-x-4">
+              <div className="flex flex-col w-1/2 text-center">
+                <label>temperature: </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={gpt2Temp}
+                  onChange={handleTemperatureChange}
+                />
+                <span>{gpt2Temp}</span>
+              </div>
+              <div className="flex flex-col w-1/2 text-center">
+                <label>max new tokens: </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={maxNewTokens}
+                  onChange={handleChangeNewTokens}
+                />
+                <span>{maxNewTokens}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

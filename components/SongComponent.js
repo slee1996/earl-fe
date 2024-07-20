@@ -9,12 +9,15 @@ const systemPrompts = {
   popstar: "popstar",
   rapper: "rapper",
   electropopStar: "electropopStar",
+  rockstar: "rockstar",
+  countryArtist: "countryArtist",
+  custom: "custom",
 };
 
 const userPrompts = {
   verse: "VERSE",
   chorus: "CHORUS",
-  // bridge: "BRIDGE",
+  bridge: "BRIDGE",
 };
 
 export const SongComponent = ({
@@ -27,6 +30,7 @@ export const SongComponent = ({
   handleMeterClick,
   handleRemoveMeter,
   handleAddMeter,
+  handleCustomSystemPromptChange,
 }) => {
   return (
     <div
@@ -55,9 +59,16 @@ export const SongComponent = ({
             </option>
           ))}
         </select>
+        {component.selectedSystemPrompt === "custom" ? (
+          <textarea
+            className="text-black"
+            value={component.customSystemPrompt}
+            onChange={(e) => handleCustomSystemPromptChange(i, e)}
+          />
+        ) : null}
       </div>
       <div>
-        User Prompt:{" "}
+        Song Section:{" "}
         <select
           value={component.selectedUserPrompt}
           onChange={(e) => handleUserPromptChange(i, e)}
