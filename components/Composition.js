@@ -72,6 +72,7 @@ export default function Composition({ apiUrl }) {
   const [maxNewTokens, setMaxTokens] = useState(16);
   const [songTitle, setSongTitle] = useState("");
   const [songDescription, setSongDescription] = useState("");
+  const [selectedApi, setSelectedApi] = useState("openai");
 
   const changeTitle = (e) => {
     return setSongTitle(e.target.value);
@@ -103,6 +104,7 @@ export default function Composition({ apiUrl }) {
         songComponents,
         songTitle,
         songDescription,
+        clientChoice: selectedApi,
       }),
     });
     const song = await response.json();
@@ -126,6 +128,7 @@ export default function Composition({ apiUrl }) {
         songComponents,
         songTitle,
         songDescription,
+        clientChoice: selectedApi,
       }),
     });
     const song = await response.json();
@@ -293,6 +296,21 @@ export default function Composition({ apiUrl }) {
     setNewLineLoading(false);
   };
 
+  const deleteLine = ({ lineIndex }) => {
+    setSong((prevSong) => {
+      const updatedSong = [...prevSong];
+      const lastComponent = updatedSong[updatedSong.length - 1];
+
+      if (lineIndex >= 0 && lineIndex < lastComponent.lyrics.length) {
+        lastComponent.lyrics.splice(lineIndex, 1);
+      } else {
+        console.warn("Invalid line index, no line deleted.");
+      }
+
+      return updatedSong;
+    });
+  };
+
   const handleTemperatureChange = (e) => {
     const newTemp = parseFloat(e.target.value);
     setGpt2Temp(newTemp);
@@ -327,6 +345,20 @@ export default function Composition({ apiUrl }) {
           >
             Generate song with enforcement
           </button>
+          <select
+            value={selectedApi}
+            onChange={(e) => setSelectedApi(e.target.value)}
+            className="bg-black text-white border border-white rounded px-2"
+          >
+            {[
+              { title: "OpenAI", value: "openai" },
+              { title: "Anthropic", value: "anthropic" },
+            ].map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.title}
+              </option>
+            ))}
+          </select>
           <h4>Song Title</h4>
           <input
             className="text-black p-1"
@@ -430,31 +462,38 @@ export default function Composition({ apiUrl }) {
                 >
                   <h2 className="uppercase">{component.component}</h2>
                   {component.lyrics.map((lyric, lineIndex) => {
-                    console.log(lyric);
                     return (
                       <div
                         key={lyric + lineIndex.toString()}
-                        className="group-hover:bg-red-600"
+                        className="group-hover:bg-red-600 flex flex-row justify-between my-1"
                       >
-                        {lyric.split(" ").map((word, wordIndex) => {
-                          return (
-                            <LyricRegenPopup
-                              key={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                              lyric={lyric}
-                              word={word}
-                              lineIndex={lineIndex}
-                              componentIndex={componentIndex}
-                              lyricSwapFn={saveNewLine}
-                              componentLyrics={component.lyrics}
-                              isOpen={
-                                openPopupIndex ===
-                                `${componentIndex}-${lineIndex}-${wordIndex}`
-                              }
-                              setOpenPopupIndex={setOpenPopupIndex}
-                              popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                            />
-                          );
-                        })}
+                        <span>
+                          {lyric.split(" ").map((word, wordIndex) => {
+                            return (
+                              <LyricRegenPopup
+                                key={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                                lyric={lyric}
+                                word={word}
+                                lineIndex={lineIndex}
+                                componentIndex={componentIndex}
+                                lyricSwapFn={saveNewLine}
+                                componentLyrics={component.lyrics}
+                                isOpen={
+                                  openPopupIndex ===
+                                  `${componentIndex}-${lineIndex}-${wordIndex}`
+                                }
+                                setOpenPopupIndex={setOpenPopupIndex}
+                                popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
+                              />
+                            );
+                          })}
+                        </span>
+                        <button
+                          className="px-2 bg-red-500"
+                          onClick={() => deleteLine({ lineIndex })}
+                        >
+                          x
+                        </button>
                       </div>
                     );
                   })}
