@@ -6,6 +6,13 @@ import { runGpt2Worker } from "@/utils/runGpt2Worker";
 import { ChangingCharacters } from "./ChangingCharacters";
 import { SongComponent } from "./SongComponent";
 import { copyText } from "@/lib/copy-text";
+import { SUNO_OPTIMAL } from "@/lib/constants/suno-max";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -327,18 +334,46 @@ export default function Composition({ apiUrl }) {
             value={songDescription}
             onChange={changeDescription}
           />
+          <Accordion
+            className={`border border-white p-4 m-5 w-80`}
+            type="single"
+            collapsible
+            defaultValue="true"
+          >
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                &quot;Generate Song With Enforcement&quot; explanation
+              </AccordionTrigger>
+              <AccordionContent>
+                &quot;Generate Song With Enforcement&quot; will enforce meter
+                restrictions during the generation process with programmattic
+                metric detection and parsing. It takes longer, but provides
+                stronger control than the simple prompting of generic
+                &quot;Generate Song&quot;
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
-      <div>
+      <div className="px-4">
         <h1>Components</h1>
-        <button
-          className="border hover:bg-white hover:text-black px-2"
-          onClick={() => {
-            setComponents((currentVal) => [...currentVal, ComponentDefault]);
-          }}
-        >
-          Add Component
-        </button>
+        <div className="flex flex-col space-y-2">
+          <button
+            className="border hover:bg-white hover:text-black px-2"
+            onClick={() => {
+              setComponents((currentVal) => [...currentVal, ComponentDefault]);
+            }}
+          >
+            Add Component
+          </button>
+
+          <button
+            className="border hover:bg-white hover:text-black px-2"
+            onClick={() => setComponents(SUNO_OPTIMAL)}
+          >
+            Max Suno Length
+          </button>
+        </div>
         <div className="max-h-[90vh] overflow-y-scroll py-4">
           {components.map((component, i) => (
             <SongComponent
@@ -353,6 +388,8 @@ export default function Composition({ apiUrl }) {
               handleRemoveMeter={handleRemoveMeter}
               handleAddMeter={handleAddMeter}
               handleCustomSystemPromptChange={handleCustomSystemPromptChange}
+              setComponents={setComponents}
+              songLength={components.length}
             />
           ))}
         </div>
@@ -360,7 +397,7 @@ export default function Composition({ apiUrl }) {
       <div className="flex flex-col justify-top items-left w-full text-left md:px-40">
         <h1>Generated Song</h1>
         <button
-          className="border hover:bg-white hover:text-black"
+          className="border hover:bg-white hover:text-black focus:border-yellow-400"
           onClick={() =>
             copyText(
               song.flatMap((component) => [
