@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { track } from "@vercel/analytics";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -75,6 +76,7 @@ export default function Composition({ apiUrl }) {
   const changeTitle = (e) => {
     return setSongTitle(e.target.value);
   };
+
   const changeDescription = (e) => {
     return setSongDescription(e.target.value);
   };
@@ -88,6 +90,7 @@ export default function Composition({ apiUrl }) {
   };
 
   const fetchData = async ({ songComponents }) => {
+    track("Generate Song");
     setSongLoading(true);
 
     const response = await fetch(`${apiUrl}generate-song`, {
@@ -110,6 +113,7 @@ export default function Composition({ apiUrl }) {
   };
 
   const fetchDataWithEnforcement = async ({ songComponents }) => {
+    track("Generate Song With Enforcement");
     setSongLoading(true);
 
     const response = await fetch(`${apiUrl}generate-song-with-enforcement`, {
@@ -204,6 +208,7 @@ export default function Composition({ apiUrl }) {
   };
 
   const handleSystemPromptChange = (i, e) => {
+    track(`new system prompt chosen: ${e.target.value}`);
     const newSystemPrompt = e.target.value;
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
@@ -215,6 +220,7 @@ export default function Composition({ apiUrl }) {
   };
 
   const handleUserPromptChange = (i, e) => {
+    track(`new user prompt chosen: ${e.target.value}`);
     const newUserPrompt = e.target.value;
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
@@ -398,14 +404,15 @@ export default function Composition({ apiUrl }) {
         <h1>Generated Song</h1>
         <button
           className="border hover:bg-white hover:text-black focus:border-yellow-400"
-          onClick={() =>
+          onClick={() => {
+            track("copy song");
             copyText(
               song.flatMap((component) => [
                 `[${component.component.toUpperCase()}]`,
                 ...component.lyrics,
               ])
-            )
-          }
+            );
+          }}
         >
           copy song to clipboard
         </button>
