@@ -1,10 +1,12 @@
+import AuthBar from "@/components/AuthBar";
 import Composition from "@/components/Composition";
-import Image from "next/image";
+import StripeSubscription from "@/components/StripeSubscription";
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col justify-between p-4 bg-slate-950 w-screen">
-      <div className="grid text-center w-full">
+      <div className="flex flex-col text-center w-full">
+        <AuthBar />
         <Composition apiUrl={process.env.API_URL} />
       </div>
     </main>

@@ -451,23 +451,29 @@ export default function Composition({ apiUrl }) {
         <div className="max-h-[90vh] overflow-y-scroll">
           {song.length > 0 && !songLoading ? (
             song.map((component, componentIndex) => {
-              return (
+              return component.lyrics.length > 0 ? (
                 <div
                   key={
                     component.component +
                     componentIndex.toString() +
                     component.lyrics[0][0]
                   }
-                  className="group-hover:bg-red-600 w-full"
+                  className="w-full"
                 >
                   <h2 className="uppercase">{component.component}</h2>
                   {component.lyrics.map((lyric, lineIndex) => {
                     return (
                       <div
                         key={lyric + lineIndex.toString()}
-                        className="group-hover:bg-red-600 flex flex-row justify-between my-1"
+                        className="flex flex-row-reverse justify-between my-1"
                       >
-                        <span>
+                        <button
+                          className="px-2 mx-2 outline hover:bg-red-600 peer"
+                          onClick={() => deleteLine({ lineIndex })}
+                        >
+                          x
+                        </button>
+                        <span className="peer-hover:bg-white peer-hover:text-black">
                           {lyric.split(" ").map((word, wordIndex) => {
                             return (
                               <LyricRegenPopup
@@ -488,22 +494,15 @@ export default function Composition({ apiUrl }) {
                             );
                           })}
                         </span>
-                        <button
-                          className="px-2 bg-red-500"
-                          onClick={() => deleteLine({ lineIndex })}
-                        >
-                          x
-                        </button>
                       </div>
                     );
                   })}
                   {newLineLoading ? <ChangingCharacters /> : null}
                 </div>
-              );
+              ) : null;
             })
           ) : songLoading ? (
             <div className="py-12">
-              <ChangingCharacters />
               <ChangingCharacters />
               <ChangingCharacters />
               <ChangingCharacters />
