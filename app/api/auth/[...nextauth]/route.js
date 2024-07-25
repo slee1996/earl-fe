@@ -16,7 +16,7 @@ export const authOptions = {
     async session({ session, token }) {
       if (session.user) {
         console.log(session);
-        console.log(session.id);
+        console.log(session.user);
         session.user.id = token.sub;
         const subscription = await searchStripeSubscriptions({
           email: session.user.email,
