@@ -15,6 +15,8 @@ export const authOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
+        session.user.id = token.sub;
+
         const subscription = await searchStripeSubscriptions({
           email: session.user.email,
         });
