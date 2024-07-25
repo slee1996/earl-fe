@@ -36,6 +36,7 @@ export async function POST(req) {
         },
       ],
       customer_email: data.customer_email,
+      allow_promotion_codes: true,
       mode: "subscription",
       return_url: `${req.headers.get(
         "origin"
