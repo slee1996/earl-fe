@@ -13,25 +13,40 @@ export const authOptions = {
     signIn: "/auth/signin",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      console.log(user, token);
+      return token;
+    },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub;
+      if (session?.user && token) {
+        try {
+          session.user.id = token.id || token.sub;
 
-        const subscription = await searchStripeSubscriptions({
-          email: session.user.email,
-        });
+          const subscription = await searchStripeSubscriptions({
+            email: session.user.email,
+          });
 
-        if (subscription.length > 0) {
-          session.user.subscriptionExpiration =
-            subscription[0].current_period_end * 1000;
-          session.user = { ...session.user, subscription: subscription[0] };
+          if (subscription && subscription.length > 0) {
+            session.user.subscriptionExpiration =
+              subscription[0].current_period_end * 1000;
+            session.user = { ...session.user, subscription: subscription[0] };
+          }
+        } catch (error) {
+          console.error("Error in session callback:", error);
+          // Optionally set a flag or message in the session to indicate the error
+          session.error = "Failed to load user data";
         }
       }
-
+      console.log(session, token);
       return session;
     },
   },
-  debug: process.env.NODE_ENV === "development",
+  debug:
+    process.env.NODE_ENV === "development" &&
+    process.env.NEXTAUTH_DEBUG === "true",
   secret: process.env.NEXTAUTH_SECRET,
 };
 
