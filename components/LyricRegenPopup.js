@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { runOnnxInference } from "@/utils/onnxUtils";
+import { Trash2 } from "lucide-react";
 
 export default function LyricRegenPopup({
   lyricSwapFn,
@@ -55,6 +56,17 @@ export default function LyricRegenPopup({
     setOpenPopupIndex(null);
   };
 
+  const handleDeleteWord = () => {
+    const words = lyric.split(" ");
+    const wordIndex = words.indexOf(word);
+    if (wordIndex !== -1) {
+      words.splice(wordIndex, 1);
+    }
+    const newLine = words.join(" ");
+    lyricSwapFn({ lineIndex, componentIndex, lineToSave: newLine });
+    setOpenPopupIndex(null);
+  };
+
   return (
     <>
       <button
@@ -65,17 +77,26 @@ export default function LyricRegenPopup({
       </button>
       {isOpen && (
         <div className="absolute z-40 w-60 min-h-40 bg-white text-black p-2 border border-gray-300 max-h-[400px] overflow-y-scroll">
-          <div className=" bg-white drop-shadow-md">
+          <div className="bg-white drop-shadow-md">
             <button onClick={() => setOpenPopupIndex(null)}>Close popup</button>
-            <input
-              type="text"
-              value={editedWord}
-              onChange={handleTextChange}
-              className="w-full p-1 border border-gray-300"
-            />
+            <div className="flex items-center mt-2">
+              <input
+                type="text"
+                value={editedWord}
+                onChange={handleTextChange}
+                className="w-full p-1 border border-gray-300"
+              />
+              <button
+                onClick={handleDeleteWord}
+                className="ml-2 p-1 bg-red-500 text-white"
+                title="Delete word"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
             <button
               onClick={handleTextSubmit}
-              className="mt-1 p-1 bg-blue-500 text-white"
+              className="mt-1 p-1 bg-blue-500 text-white w-full"
             >
               Save
             </button>

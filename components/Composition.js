@@ -353,6 +353,7 @@ export default function Composition({ apiUrl }) {
             {[
               { title: "OpenAI", value: "openai" },
               { title: "Anthropic", value: "anthropic" },
+              { title: "Llama 3.1", value: "llama" },
             ].map((option) => (
               <option key={option.value} value={option.value}>
                 {option.title}
