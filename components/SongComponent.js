@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -18,12 +19,6 @@ const systemPrompts = {
   rockstar: "rockstar",
   countryArtist: "countryArtist",
   custom: "custom",
-};
-
-const userPrompts = {
-  verse: "VERSE",
-  chorus: "CHORUS",
-  bridge: "BRIDGE",
 };
 
 export const SongComponent = ({

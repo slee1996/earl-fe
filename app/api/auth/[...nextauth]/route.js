@@ -17,7 +17,7 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
       }
-      console.log(user, token);
+
       return token;
     },
     async session({ session, token }) {
@@ -40,7 +40,7 @@ export const authOptions = {
           session.error = "Failed to load user data";
         }
       }
-      console.log(session, token);
+
       return session;
     },
   },

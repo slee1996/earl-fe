@@ -12,7 +12,7 @@ export const SignOutButton = () => {
     setIsLoading(true);
     try {
       const result = await signOut({
-        callbackUrl: "/", // Redirect to home page after sign out
+        callbackUrl: "/",
         redirect: true,
       });
       if (result?.url) {
@@ -20,7 +20,6 @@ export const SignOutButton = () => {
       }
     } catch (error) {
       console.error("Sign out error:", error);
-      // Handle sign-out error, e.g., show error message to user
     } finally {
       setIsLoading(false);
     }
