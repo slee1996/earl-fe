@@ -1,19 +1,14 @@
 "use client";
-
 import { useState } from "react";
-import LyricRegenPopup from "./LyricRegenPopup";
+import LyricRegenPopup from "../LyricRegenPopup";
 import { runGpt2Worker } from "@/utils/runGpt2Worker";
-import { ChangingCharacters } from "./ChangingCharacters";
-import { SongComponent } from "./SongComponent";
+import { ChangingCharacters } from "../ChangingCharacters";
+import { SongComponent } from "../SongComponent";
 import { copyText } from "@/lib/copy-text";
-import { SUNO_OPTIMAL } from "@/lib/constants/suno-max";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { track } from "@vercel/analytics";
+import GenerationControls from "./GenerationControls";
+import CompositionControls from "./CompositionControls";
+import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -22,12 +17,6 @@ const systemPrompts = {
   rockstar: "rockstar",
   countryArtist: "countryArtist",
   custom: "custom",
-};
-
-const userPrompts = {
-  verse: "VERSE",
-  chorus: "CHORUS",
-  bridge: "BRIDGE",
 };
 
 const ComponentDefault = {
@@ -74,68 +63,12 @@ export default function Composition({ apiUrl }) {
   const [songDescription, setSongDescription] = useState("");
   const [selectedApi, setSelectedApi] = useState("openai");
 
-  const changeTitle = (e) => {
-    return setSongTitle(e.target.value);
-  };
-
-  const changeDescription = (e) => {
-    return setSongDescription(e.target.value);
-  };
-
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
       const updatedSong = [...prevSong];
       updatedSong[componentIndex].lyrics[lineIndex] = lineToSave;
       return updatedSong;
     });
-  };
-
-  const fetchData = async ({ songComponents }) => {
-    track("Generate Song");
-    setSongLoading(true);
-
-    const response = await fetch(`${apiUrl}generate-song`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-      body: JSON.stringify({
-        songComponents,
-        songTitle,
-        songDescription,
-        clientChoice: selectedApi,
-      }),
-    });
-    const song = await response.json();
-
-    await setSong(song);
-
-    return setSongLoading(false);
-  };
-
-  const fetchDataWithEnforcement = async ({ songComponents }) => {
-    track("Generate Song With Enforcement");
-    setSongLoading(true);
-
-    const response = await fetch(`${apiUrl}generate-song-with-enforcement`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-      body: JSON.stringify({
-        songComponents,
-        songTitle,
-        songDescription,
-        clientChoice: selectedApi,
-      }),
-    });
-    const song = await response.json();
-
-    await setSong(song);
-
-    return setSongLoading(false);
   };
 
   const handleMeterClick = (i, j, k) => {
@@ -323,98 +256,26 @@ export default function Composition({ apiUrl }) {
 
   return (
     <div className="text-white flex flex-col md:flex-row">
-      <div>
-        <div className="flex flex-col space-y-4 mt-4">
-          <button
-            className="border hover:bg-white hover:text-black"
-            onClick={() =>
-              fetchData({
-                songComponents: components,
-              })
-            }
-          >
-            Generate song
-          </button>
-          <button
-            className="border hover:bg-white hover:text-black"
-            onClick={() =>
-              fetchDataWithEnforcement({
-                songComponents: components,
-              })
-            }
-          >
-            Generate song with enforcement
-          </button>
-          <select
-            value={selectedApi}
-            onChange={(e) => setSelectedApi(e.target.value)}
-            className="bg-black text-white border border-white rounded px-2"
-          >
-            {[
-              { title: "OpenAI", value: "openai" },
-              { title: "Anthropic", value: "anthropic" },
-              { title: "Llama 3.1", value: "llama" },
-            ].map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.title}
-              </option>
-            ))}
-          </select>
-          <h4>Song Title</h4>
-          <input
-            className="text-black p-1"
-            placeholder="Drive It Like You Stole It"
-            value={songTitle}
-            onChange={changeTitle}
-          />
-          <h4>Song Description</h4>
-          <textarea
-            className="text-black p-1"
-            value={songDescription}
-            onChange={changeDescription}
-          />
-          <Accordion
-            className={`border border-white p-4 m-5 w-80`}
-            type="single"
-            collapsible
-            defaultValue="true"
-          >
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                &quot;Generate Song With Enforcement&quot; explanation
-              </AccordionTrigger>
-              <AccordionContent>
-                &quot;Generate Song With Enforcement&quot; will enforce meter
-                restrictions during the generation process with programmattic
-                metric detection and parsing. It takes longer, but provides
-                stronger control than the simple prompting of generic
-                &quot;Generate Song&quot;
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </div>
-      <div className="px-4">
-        <h1>Components</h1>
-        <div className="flex flex-col space-y-2">
-          <button
-            className="border hover:bg-white hover:text-black px-2"
-            onClick={() => {
-              setComponents((currentVal) => [...currentVal, ComponentDefault]);
-            }}
-          >
-            Add Component
-          </button>
-
-          <button
-            className="border hover:bg-white hover:text-black px-2"
-            onClick={() => setComponents(SUNO_OPTIMAL)}
-          >
-            Max Suno Length
-          </button>
-        </div>
-        <div className="max-h-[90vh] overflow-y-scroll py-4">
-          {components.map((component, i) => (
+      <GenerationControls
+        components={components}
+        selectedApi={selectedApi}
+        setSelectedApi={setSelectedApi}
+        songTitle={songTitle}
+        songDescription={songDescription}
+        setSongTitle={setSongTitle}
+        setSongDescription={setSongDescription}
+        setSong={setSong}
+        setSongLoading={setSongLoading}
+        apiUrl={apiUrl}
+      />
+      <CompositionControls
+        setComponents={setComponents}
+        ComponentDefault={ComponentDefault}
+        apiUrl={apiUrl}
+      >
+        {components.map((component, i) => {
+          console.log(component)
+          return (
             <SongComponent
               key={i}
               component={component}
@@ -430,9 +291,10 @@ export default function Composition({ apiUrl }) {
               setComponents={setComponents}
               songLength={components.length}
             />
-          ))}
-        </div>
-      </div>
+          );
+        })}
+      </CompositionControls>
+      {/* SONG DISPLAY */}
       <div className="flex flex-col justify-top items-left w-full text-left md:px-40">
         <h1>Generated Song</h1>
         <button
@@ -504,7 +366,6 @@ export default function Composition({ apiUrl }) {
             })
           ) : songLoading ? (
             <div className="py-12">
-              <ChangingCharacters />
               <ChangingCharacters />
               <ChangingCharacters />
               <ChangingCharacters />

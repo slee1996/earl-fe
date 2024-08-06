@@ -1,6 +1,5 @@
 import AuthBar from "@/components/AuthBar";
-import Composition from "@/components/Composition";
-import StripeSubscription from "@/components/StripeSubscription";
+import Composition from "@/components/composition/Composition";
 
 export default function Home() {
   return (
