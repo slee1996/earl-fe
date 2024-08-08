@@ -24,6 +24,7 @@ const ComponentDefault = {
   meter: [[1, 0, 1, 0, 1, 0, 1, 0]],
   selectedUserPrompt: userPrompts.verse,
   selectedSystemPrompt: systemPrompts.popstar,
+  rhymeScheme: "",
 };
 
 export default function Composition({ apiUrl }) {
@@ -37,6 +38,7 @@ export default function Composition({ apiUrl }) {
       selectedSystemPrompt: systemPrompts.rapper,
       selectedUserPrompt: userPrompts.verse,
       customSystemPrompt: "",
+      rhymeScheme: "",
     },
   ]);
   const [song, setSong] = useState([
@@ -62,6 +64,7 @@ export default function Composition({ apiUrl }) {
   const [songTitle, setSongTitle] = useState("");
   const [songDescription, setSongDescription] = useState("");
   const [selectedApi, setSelectedApi] = useState("openai");
+  const [rhymeScheme, setRhymeScheme] = useState("");
 
   const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
     setSong((prevSong) => {
@@ -121,15 +124,6 @@ export default function Composition({ apiUrl }) {
         };
       });
     });
-  };
-
-  const handleLineLimitChange = (i, e) => {
-    const newLineLimit = parseInt(e.target.value, 10);
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) =>
-        index === i ? { ...component, lineLimit: newLineLimit } : component
-      )
-    );
   };
 
   const handleCustomSystemPromptChange = (i, e) => {
@@ -267,6 +261,7 @@ export default function Composition({ apiUrl }) {
         setSong={setSong}
         setSongLoading={setSongLoading}
         apiUrl={apiUrl}
+        rhymeScheme={rhymeScheme}
       />
       <CompositionControls
         setComponents={setComponents}
@@ -274,13 +269,12 @@ export default function Composition({ apiUrl }) {
         apiUrl={apiUrl}
       >
         {components.map((component, i) => {
-          console.log(component)
+          console.log(component);
           return (
             <SongComponent
               key={i}
               component={component}
               i={i}
-              handleLineLimitChange={handleLineLimitChange}
               handleSystemPromptChange={handleSystemPromptChange}
               handleUserPromptChange={handleUserPromptChange}
               handleRangeChange={handleRangeChange}

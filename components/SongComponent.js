@@ -24,7 +24,6 @@ const systemPrompts = {
 export const SongComponent = ({
   component,
   i,
-  handleLineLimitChange,
   handleSystemPromptChange,
   handleUserPromptChange,
   handleRangeChange,
@@ -35,6 +34,23 @@ export const SongComponent = ({
   setComponents,
   songLength,
 }) => {
+  const handleLineLimitChange = (e) => {
+    const newLineLimit = parseInt(e.target.value, 10);
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i ? { ...component, lineLimit: newLineLimit } : component
+      )
+    );
+  };
+
+  const handleRhymeSchemeChange = (e) => {
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i ? { ...component, rhymeScheme: e.target.value } : component
+      )
+    );
+  };
+
   return (
     <Accordion
       className={`border border-white p-4 m-5 w-80 peer component-${i.toString()} group`}
@@ -49,13 +65,22 @@ export const SongComponent = ({
         </AccordionTrigger>
         <AccordionContent>
           <div>
-            Line Limit:{" "}
+            <label>Line Limit:</label>
             <input
               type="number"
               value={component.lineLimit}
-              onChange={(e) => handleLineLimitChange(i, e)}
+              onChange={(e) => handleLineLimitChange(e)}
               min="1"
               className="bg-black text-white border border-white rounded px-2 w-12"
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <label>Rhyme Scheme:</label>
+            <input
+              placeholder="AABB"
+              value={component.rhymeScheme}
+              onChange={handleRhymeSchemeChange}
+              className="bg-black text-white border border-white rounded px-2"
             />
           </div>
           <div>
