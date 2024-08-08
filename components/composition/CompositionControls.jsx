@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { USER_PROMPTS } from "@/lib/constants/user-prompts";
 import { fetchGeniusLink } from "@/lib/fetch-song-from-genius";
+import { toast } from "sonner";
 
 export default function CompositionControls({
   children,
@@ -46,7 +47,7 @@ export default function CompositionControls({
       );
     } catch (error) {
       console.error("Error generating song structure:", error);
-      // You might want to show an error message to the user here
+      toast("Error generating song structure.");
     } finally {
       setIsGenerating(false);
     }
@@ -57,7 +58,6 @@ export default function CompositionControls({
       /\[((?:OUTRO|VERSE|CHORUS|BRIDGE|INTRO|PRECHORUS)(?:\s*\d+)?)\]/i
     );
     const parsedLyrics = [];
-    //terms to parse for: document.querySelectorAll("div[data-lyrics-container='true']")
 
     for (let i = 1; i < parts.length; i += 2) {
       parsedLyrics.push({
@@ -87,6 +87,7 @@ export default function CompositionControls({
         >
           Max Suno Length
         </button>
+
         <Dialog>
           <DialogTrigger className="border hover:bg-white hover:text-black px-2">
             Generate Structure from Existing Song
