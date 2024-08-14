@@ -28,14 +28,14 @@ export const SongLibrary = ({ song, setSong }) => {
     await db.songs.add({ title: song[0].lyrics[0], song });
     const updatedSongs = await db.songs.toArray();
     setSavedSongs(updatedSongs);
-    toast("Song Saved!")
+    toast("Song Saved!");
   };
 
   const handleDeleteSong = async (id) => {
     await db.songs.delete(id);
     const updatedSongs = await db.songs.toArray();
     setSavedSongs(updatedSongs);
-    toast("Song Deleted!")
+    toast("Song Deleted!");
   };
 
   return (
@@ -63,10 +63,12 @@ export const SongLibrary = ({ song, setSong }) => {
                         </strong>
                         {/* <pre className="whitespace-pre-wrap">{e.song.map(lyrics.join("\n")}</pre> */}
                         <pre className="whitespace-pre-wrap">
-                          {e.song &&
-                            e.song
-                              .map((component) => component.lyrics)
-                              .join("\n")}
+                          <ScrollArea className="max-h-[20vh] overflow-y-scroll">
+                            {e.song &&
+                              e.song
+                                .map((component) => component.lyrics)
+                                .join("\n")}
+                          </ScrollArea>
                         </pre>
                         <div className="flex flex-row space-x-1">
                           <Button onClick={() => setSong(e.song)}>
