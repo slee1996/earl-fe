@@ -3,10 +3,9 @@ import MDEditor, {
   components as defaultComponents,
 } from "@uiw/react-md-editor";
 import { runOnnxInference } from "@/utils/onnxUtils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
-const Popup = ({ word, position, onClose, song, onSuggestionClick }) => {
+const Popup = ({ word, onClose, song, onSuggestionClick }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

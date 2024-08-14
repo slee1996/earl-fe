@@ -10,6 +10,8 @@ import GenerationControls from "./GenerationControls";
 import CompositionControls from "./CompositionControls";
 import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
 import MDEditorWithPopup from "./GeneratedSong/MDEditorWithPopup";
+import { Button } from "../ui/button";
+import { SongLibrary } from "../SongLibrary";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -219,7 +221,7 @@ export default function Composition({ apiUrl }) {
         })}
       </CompositionControls>
       {/* SONG DISPLAY */}
-      <div className="flex flex-col justify-top items-left w-full text-left md:px-32">
+      <div className="flex flex-col justify-top items-left w-full text-left px-4">
         <h1>Generated Song</h1>
         <button
           className="border hover:bg-white hover:text-black focus:border-yellow-400"
@@ -236,44 +238,49 @@ export default function Composition({ apiUrl }) {
           copy song to clipboard
         </button>
         <div className="max-h-[90vh] overflow-y-scroll">
-          <button
-            className={
-              editMode ? `bg-red-500 my-4 px-2 border` : "my-4 px-2 border"
-            }
-            onClick={() => {
-              if (editMode) {
-                // Parse songToEdit and update song state
-                const lines = songToEdit.split("\n");
-                const newSong = [];
-                let currentComponent = null;
-
-                lines.forEach((line) => {
-                  if (line.startsWith("[") && line.endsWith("]")) {
-                    if (currentComponent) {
-                      newSong.push(currentComponent);
-                    }
-                    currentComponent = {
-                      component: line.slice(1, -1).toLowerCase(),
-                      lyrics: [],
-                    };
-                  } else if (currentComponent && line.trim() !== "") {
-                    currentComponent.lyrics.push(line);
-                  }
-                });
-
-                if (currentComponent) {
-                  newSong.push(currentComponent);
-                }
-
-                setSongAndUpdateEdit(newSong);
-                setEditMode(false);
-              } else {
-                setEditMode(true);
+          <div className="flex flex-row w-full items-center justify-between pr-4">
+            <Button
+              className={
+                editMode
+                  ? `text-red-400 font-extrabold my-4 px-2 border-2 border-red-400`
+                  : "my-4 px-2 border"
               }
-            }}
-          >
-            {editMode ? "Save Changes" : "Edit Lyrics"}
-          </button>
+              onClick={() => {
+                if (editMode) {
+                  const lines = songToEdit.split("\n");
+                  const newSong = [];
+                  let currentComponent = null;
+
+                  lines.forEach((line) => {
+                    if (line.startsWith("[") && line.endsWith("]")) {
+                      if (currentComponent) {
+                        newSong.push(currentComponent);
+                      }
+                      currentComponent = {
+                        component: line.slice(1, -1).toLowerCase(),
+                        lyrics: [],
+                      };
+                    } else if (currentComponent && line.trim() !== "") {
+                      currentComponent.lyrics.push(line);
+                    }
+                  });
+
+                  if (currentComponent) {
+                    newSong.push(currentComponent);
+                  }
+
+                  setSongAndUpdateEdit(newSong);
+                  setEditMode(false);
+                } else {
+                  setEditMode(true);
+                }
+              }}
+            >
+              {editMode ? "Save Changes" : "Edit Lyrics"}
+            </Button>
+            <SongLibrary song={song} setSong={setSong} />
+          </div>
+
           <MDEditorWithPopup
             value={songToEdit}
             onChange={(value) => onChange(value)}
