@@ -15,7 +15,7 @@ export default function GenerationControls({
   songDescription,
   setSongTitle,
   setSongDescription,
-  setSong,
+  setSongAndUpdateEdit,
   setSongLoading,
   apiUrl,
 }) {
@@ -46,7 +46,7 @@ export default function GenerationControls({
     });
     const song = await response.json();
 
-    await setSong(song);
+    setSongAndUpdateEdit(song); // Changed from setSong
 
     return setSongLoading(false);
   };
@@ -70,7 +70,7 @@ export default function GenerationControls({
     });
     const song = await response.json();
 
-    await setSong(song);
+    setSongAndUpdateEdit(song); // Changed from setSong
 
     return setSongLoading(false);
   };

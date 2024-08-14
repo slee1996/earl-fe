@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
+import { track } from "@vercel/analytics";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -24,16 +25,76 @@ const systemPrompts = {
 export const SongComponent = ({
   component,
   i,
-  handleSystemPromptChange,
-  handleUserPromptChange,
-  handleRangeChange,
-  handleMeterClick,
-  handleRemoveMeter,
-  handleAddMeter,
-  handleCustomSystemPromptChange,
   setComponents,
   songLength,
 }) => {
+  const handleCustomSystemPromptChange = (i, e) => {
+    const newSystemPrompt = e.target.value;
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i
+          ? { ...component, customSystemPrompt: newSystemPrompt }
+          : component
+      )
+    );
+  };
+
+  const handleAddMeter = (i) => {
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i
+          ? {
+              ...component,
+              meter: [...component.meter, [1, 0, 1, 0, 1, 0, 1, 0]],
+            }
+          : component
+      )
+    );
+  };
+
+  const handleRemoveMeter = (i, j) => {
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) => {
+        if (index !== i) return component;
+        return {
+          ...component,
+          meter: component.meter.filter((_, rowIndex) => rowIndex !== j),
+        };
+      })
+    );
+  };
+
+  const handleRangeChange = async (i, j, e) => {
+    const newLength = parseInt(e.target.value, 10);
+
+    await setComponents((prevComponents) => {
+      return prevComponents.map((component, index) => {
+        if (index !== i) return component;
+
+        const updatedMeter = component.meter.map((meterRow, rowIndex) => {
+          if (rowIndex !== j) return meterRow;
+
+          const currentLength = meterRow.length;
+          if (newLength > currentLength) {
+            const lastDigit = meterRow[currentLength - 1];
+            const fillValue = lastDigit === 0 ? 1 : 0;
+            return [
+              ...meterRow,
+              ...Array(newLength - currentLength).fill(fillValue),
+            ];
+          } else {
+            return meterRow.slice(0, newLength);
+          }
+        });
+
+        return {
+          ...component,
+          meter: updatedMeter,
+        };
+      });
+    });
+  };
+
   const handleLineLimitChange = (e) => {
     const newLineLimit = parseInt(e.target.value, 10);
     setComponents((prevComponents) =>
@@ -47,6 +108,51 @@ export const SongComponent = ({
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
         index === i ? { ...component, rhymeScheme: e.target.value } : component
+      )
+    );
+  };
+
+  const handleMeterClick = (i, j, k) => {
+    setComponents((prevComponents) => {
+      return prevComponents.map((component, index) => {
+        if (index !== i) return component;
+
+        const updatedMeter = component.meter.map((meterRow, rowIndex) => {
+          if (rowIndex !== j) return meterRow;
+
+          return meterRow.map((value, colIndex) => {
+            return colIndex === k ? (value === 0 ? 1 : 0) : value;
+          });
+        });
+
+        return {
+          ...component,
+          meter: updatedMeter,
+        };
+      });
+    });
+  };
+
+  const handleSystemPromptChange = (i, e) => {
+    track(`new system prompt chosen: ${e.target.value}`);
+    const newSystemPrompt = e.target.value;
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i
+          ? { ...component, selectedSystemPrompt: newSystemPrompt }
+          : component
+      )
+    );
+  };
+
+  const handleUserPromptChange = (i, e) => {
+    track(`new user prompt chosen: ${e.target.value}`);
+    const newUserPrompt = e.target.value;
+    setComponents((prevComponents) =>
+      prevComponents.map((component, index) =>
+        index === i
+          ? { ...component, selectedUserPrompt: newUserPrompt }
+          : component
       )
     );
   };

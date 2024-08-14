@@ -122,7 +122,7 @@ export default function CompositionControls({
                   >
                     {isGenerating
                       ? "Generating..."
-                      : "Generate Song Structure From Existing Song"}
+                      : "Pull Song From Genius"}
                   </button>
                   <sub>
                     *Paste a link from Genius in the input above to get your

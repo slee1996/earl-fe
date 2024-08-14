@@ -6,7 +6,7 @@ self.onmessage = async (event) => {
     const unmasker = await pipeline("fill-mask", "Xenova/bert-base-uncased");
 
     const unmaskOutput = await unmasker(`${input}`, {
-      topk: 20,
+      topk: 10,
     });
 
     const result = unmaskOutput

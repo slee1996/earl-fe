@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LyricRegenPopup from "../LyricRegenPopup";
 import { runGpt2Worker } from "@/utils/runGpt2Worker";
 import { ChangingCharacters } from "../ChangingCharacters";
@@ -9,6 +9,7 @@ import { track } from "@vercel/analytics";
 import GenerationControls from "./GenerationControls";
 import CompositionControls from "./CompositionControls";
 import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
+import MDEditorWithPopup from "./GeneratedSong/MDEditorWithPopup";
 
 const systemPrompts = {
   popstar: "popstar",
@@ -24,7 +25,12 @@ const ComponentDefault = {
   meter: [[1, 0, 1, 0, 1, 0, 1, 0]],
   selectedUserPrompt: userPrompts.verse,
   selectedSystemPrompt: systemPrompts.popstar,
+  customSystemPrompt: "",
   rhymeScheme: "",
+};
+
+const CustomMarkdown = ({ children }) => {
+  return <div onClick={() => console.log(e.target.value)}>{children}</div>;
 };
 
 export default function Composition({ apiUrl }) {
@@ -65,125 +71,44 @@ export default function Composition({ apiUrl }) {
   const [songDescription, setSongDescription] = useState("");
   const [selectedApi, setSelectedApi] = useState("openai");
   const [rhymeScheme, setRhymeScheme] = useState("");
+  const [songToEdit, setSongToEdit] = useState("");
+  const [editMode, setEditMode] = useState(false);
 
-  const saveNewLine = ({ lineToSave, lineIndex, componentIndex }) => {
+  useEffect(() => {
+    if (!editMode) {
+      const formattedSong = song
+        .map((component) => [
+          `[${component.component.toUpperCase()}]`,
+          ...component.lyrics,
+        ])
+        .flat()
+        .join("\n");
+      setSongToEdit(formattedSong);
+    }
+  }, [song, editMode]);
+
+  const setSongAndUpdateEdit = (newSongOrUpdateFunction) => {
     setSong((prevSong) => {
-      const updatedSong = [...prevSong];
-      updatedSong[componentIndex].lyrics[lineIndex] = lineToSave;
+      const updatedSong =
+        typeof newSongOrUpdateFunction === "function"
+          ? newSongOrUpdateFunction(prevSong)
+          : newSongOrUpdateFunction;
+
+      console.log("Updated song:", updatedSong);
+
+      const formattedSong = updatedSong
+        .map((component) => [
+          `[${component.component.toUpperCase()}]`,
+          ...component.lyrics,
+        ])
+        .flat()
+        .join("\n");
+
+      setSongToEdit(formattedSong);
+      setEditMode(false);
+
       return updatedSong;
     });
-  };
-
-  const handleMeterClick = (i, j, k) => {
-    setComponents((prevComponents) => {
-      return prevComponents.map((component, index) => {
-        if (index !== i) return component;
-
-        const updatedMeter = component.meter.map((meterRow, rowIndex) => {
-          if (rowIndex !== j) return meterRow;
-
-          return meterRow.map((value, colIndex) => {
-            return colIndex === k ? (value === 0 ? 1 : 0) : value;
-          });
-        });
-
-        return {
-          ...component,
-          meter: updatedMeter,
-        };
-      });
-    });
-  };
-
-  const handleRangeChange = async (i, j, e) => {
-    const newLength = parseInt(e.target.value, 10);
-
-    await setComponents((prevComponents) => {
-      return prevComponents.map((component, index) => {
-        if (index !== i) return component;
-
-        const updatedMeter = component.meter.map((meterRow, rowIndex) => {
-          if (rowIndex !== j) return meterRow;
-
-          const currentLength = meterRow.length;
-          if (newLength > currentLength) {
-            const lastDigit = meterRow[currentLength - 1];
-            const fillValue = lastDigit === 0 ? 1 : 0;
-            return [
-              ...meterRow,
-              ...Array(newLength - currentLength).fill(fillValue),
-            ];
-          } else {
-            return meterRow.slice(0, newLength);
-          }
-        });
-
-        return {
-          ...component,
-          meter: updatedMeter,
-        };
-      });
-    });
-  };
-
-  const handleCustomSystemPromptChange = (i, e) => {
-    const newSystemPrompt = e.target.value;
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) =>
-        index === i
-          ? { ...component, customSystemPrompt: newSystemPrompt }
-          : component
-      )
-    );
-  };
-
-  const handleSystemPromptChange = (i, e) => {
-    track(`new system prompt chosen: ${e.target.value}`);
-    const newSystemPrompt = e.target.value;
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) =>
-        index === i
-          ? { ...component, selectedSystemPrompt: newSystemPrompt }
-          : component
-      )
-    );
-  };
-
-  const handleUserPromptChange = (i, e) => {
-    track(`new user prompt chosen: ${e.target.value}`);
-    const newUserPrompt = e.target.value;
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) =>
-        index === i
-          ? { ...component, selectedUserPrompt: newUserPrompt }
-          : component
-      )
-    );
-  };
-
-  const handleAddMeter = (i) => {
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) =>
-        index === i
-          ? {
-              ...component,
-              meter: [...component.meter, [1, 0, 1, 0, 1, 0, 1, 0]],
-            }
-          : component
-      )
-    );
-  };
-
-  const handleRemoveMeter = (i, j) => {
-    setComponents((prevComponents) =>
-      prevComponents.map((component, index) => {
-        if (index !== i) return component;
-        return {
-          ...component,
-          meter: component.meter.filter((_, rowIndex) => rowIndex !== j),
-        };
-      })
-    );
   };
 
   const addNewLine = async () => {
@@ -203,7 +128,8 @@ export default function Composition({ apiUrl }) {
       max_new_tokens: maxNewTokens,
     });
 
-    setSong((prevSong) => {
+    const update = (prevSong) => {
+      console.log("prev ", prevSong);
       const updatedSong = [...prevSong];
       const lastComponent = updatedSong[updatedSong.length - 1];
 
@@ -216,26 +142,13 @@ export default function Composition({ apiUrl }) {
       } else {
         console.warn("New line is already present, not adding again.");
       }
-
+      console.log("prev ", updatedSong);
       return updatedSong;
-    });
+    };
+
+    setSongAndUpdateEdit((prevSong) => update(prevSong));
 
     setNewLineLoading(false);
-  };
-
-  const deleteLine = ({ lineIndex }) => {
-    setSong((prevSong) => {
-      const updatedSong = [...prevSong];
-      const lastComponent = updatedSong[updatedSong.length - 1];
-
-      if (lineIndex >= 0 && lineIndex < lastComponent.lyrics.length) {
-        lastComponent.lyrics.splice(lineIndex, 1);
-      } else {
-        console.warn("Invalid line index, no line deleted.");
-      }
-
-      return updatedSong;
-    });
   };
 
   const handleTemperatureChange = (e) => {
@@ -248,6 +161,30 @@ export default function Composition({ apiUrl }) {
     setMaxTokens(newMaxTokens);
   };
 
+  const onChange = (value) => {
+    const structureElements = [
+      "VERSE",
+      "CHORUS",
+      "BRIDGE",
+      "INTRO",
+      "OUTRO",
+      "ARBITRARY",
+      "PRECHORUS",
+    ];
+
+    let processedValue = value;
+
+    structureElements.forEach((element) => {
+      const regex = new RegExp(`\\/\\/${element.charAt(0)}`, "gi");
+      processedValue = processedValue.replace(regex, `[${element}]`);
+    });
+
+    setSongToEdit(processedValue);
+    if (!editMode) {
+      setEditMode(true);
+    }
+  };
+
   return (
     <div className="text-white flex flex-col md:flex-row">
       <GenerationControls
@@ -258,7 +195,7 @@ export default function Composition({ apiUrl }) {
         songDescription={songDescription}
         setSongTitle={setSongTitle}
         setSongDescription={setSongDescription}
-        setSong={setSong}
+        setSongAndUpdateEdit={setSongAndUpdateEdit}
         setSongLoading={setSongLoading}
         apiUrl={apiUrl}
         rhymeScheme={rhymeScheme}
@@ -275,13 +212,6 @@ export default function Composition({ apiUrl }) {
               key={i}
               component={component}
               i={i}
-              handleSystemPromptChange={handleSystemPromptChange}
-              handleUserPromptChange={handleUserPromptChange}
-              handleRangeChange={handleRangeChange}
-              handleMeterClick={handleMeterClick}
-              handleRemoveMeter={handleRemoveMeter}
-              handleAddMeter={handleAddMeter}
-              handleCustomSystemPromptChange={handleCustomSystemPromptChange}
               setComponents={setComponents}
               songLength={components.length}
             />
@@ -289,7 +219,7 @@ export default function Composition({ apiUrl }) {
         })}
       </CompositionControls>
       {/* SONG DISPLAY */}
-      <div className="flex flex-col justify-top items-left w-full text-left md:px-40">
+      <div className="flex flex-col justify-top items-left w-full text-left md:px-32">
         <h1>Generated Song</h1>
         <button
           className="border hover:bg-white hover:text-black focus:border-yellow-400"
@@ -306,66 +236,48 @@ export default function Composition({ apiUrl }) {
           copy song to clipboard
         </button>
         <div className="max-h-[90vh] overflow-y-scroll">
-          {song.length > 0 && !songLoading ? (
-            song.map((component, componentIndex) => {
-              return component.lyrics.length > 0 ? (
-                <div
-                  key={
-                    component.component +
-                    componentIndex.toString() +
-                    component.lyrics[0][0]
+          <button
+            className={
+              editMode ? `bg-red-500 my-4 px-2 border` : "my-4 px-2 border"
+            }
+            onClick={() => {
+              if (editMode) {
+                // Parse songToEdit and update song state
+                const lines = songToEdit.split("\n");
+                const newSong = [];
+                let currentComponent = null;
+
+                lines.forEach((line) => {
+                  if (line.startsWith("[") && line.endsWith("]")) {
+                    if (currentComponent) {
+                      newSong.push(currentComponent);
+                    }
+                    currentComponent = {
+                      component: line.slice(1, -1).toLowerCase(),
+                      lyrics: [],
+                    };
+                  } else if (currentComponent && line.trim() !== "") {
+                    currentComponent.lyrics.push(line);
                   }
-                  className="w-full"
-                >
-                  <h2 className="uppercase">{component.component}</h2>
-                  {component.lyrics.map((lyric, lineIndex) => {
-                    return (
-                      <div
-                        key={lyric + lineIndex.toString()}
-                        className="flex flex-row-reverse justify-between my-1"
-                      >
-                        <button
-                          className="px-2 mx-2 outline hover:bg-red-600 peer"
-                          onClick={() => deleteLine({ lineIndex })}
-                        >
-                          x
-                        </button>
-                        <span className="peer-hover:bg-white peer-hover:text-black">
-                          {lyric.split(" ").map((word, wordIndex) => {
-                            return (
-                              <LyricRegenPopup
-                                key={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                                lyric={lyric}
-                                word={word}
-                                lineIndex={lineIndex}
-                                componentIndex={componentIndex}
-                                lyricSwapFn={saveNewLine}
-                                componentLyrics={component.lyrics}
-                                isOpen={
-                                  openPopupIndex ===
-                                  `${componentIndex}-${lineIndex}-${wordIndex}`
-                                }
-                                setOpenPopupIndex={setOpenPopupIndex}
-                                popupId={`${componentIndex}-${lineIndex}-${wordIndex}`}
-                              />
-                            );
-                          })}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  {newLineLoading ? <ChangingCharacters /> : null}
-                </div>
-              ) : null;
-            })
-          ) : songLoading ? (
-            <div className="py-12">
-              <ChangingCharacters />
-              <ChangingCharacters />
-              <ChangingCharacters />
-              <ChangingCharacters />
-            </div>
-          ) : null}
+                });
+
+                if (currentComponent) {
+                  newSong.push(currentComponent);
+                }
+
+                setSongAndUpdateEdit(newSong);
+                setEditMode(false);
+              } else {
+                setEditMode(true);
+              }
+            }}
+          >
+            {editMode ? "Save Changes" : "Edit Lyrics"}
+          </button>
+          <MDEditorWithPopup
+            value={songToEdit}
+            onChange={(value) => onChange(value)}
+          />
           <div className="flex flex-col">
             <button
               className={`border px-4 py-1 my-4 hover:bg-white hover:text-black ${
