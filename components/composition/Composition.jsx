@@ -1,39 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import LyricRegenPopup from "../LyricRegenPopup";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { runGpt2Worker } from "@/utils/runGpt2Worker";
-import { ChangingCharacters } from "../ChangingCharacters";
 import { SongComponent } from "../SongComponent";
 import { copyText } from "@/lib/copy-text";
 import { track } from "@vercel/analytics";
 import GenerationControls from "./GenerationControls";
 import CompositionControls from "./CompositionControls";
-import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
+import {
+  USER_PROMPTS as userPrompts,
+  SYSTEM_PROMPTS as systemPrompts,
+  DEFAULT_COMPONENT as ComponentDefault,
+} from "@/lib/constants";
 import MDEditorWithPopup from "./GeneratedSong/MDEditorWithPopup";
 import { Button } from "../ui/button";
 import { SongLibrary } from "../SongLibrary";
-
-const systemPrompts = {
-  popstar: "popstar",
-  rapper: "rapper",
-  electropopStar: "electropopStar",
-  rockstar: "rockstar",
-  countryArtist: "countryArtist",
-  custom: "custom",
-};
-
-const ComponentDefault = {
-  lineLimit: 8,
-  meter: [[1, 0, 1, 0, 1, 0, 1, 0]],
-  selectedUserPrompt: userPrompts.verse,
-  selectedSystemPrompt: systemPrompts.popstar,
-  customSystemPrompt: "",
-  rhymeScheme: "",
-};
-
-const CustomMarkdown = ({ children }) => {
-  return <div onClick={() => console.log(e.target.value)}>{children}</div>;
-};
 
 export default function Composition({ apiUrl }) {
   const [components, setComponents] = useState([
@@ -64,9 +45,7 @@ export default function Composition({ apiUrl }) {
       ],
     },
   ]);
-  const [openPopupIndex, setOpenPopupIndex] = useState(null);
   const [newLineLoading, setNewLineLoading] = useState(false);
-  const [songLoading, setSongLoading] = useState(false);
   const [gpt2Temp, setGpt2Temp] = useState(0.1);
   const [maxNewTokens, setMaxTokens] = useState(16);
   const [songTitle, setSongTitle] = useState("");
@@ -75,6 +54,7 @@ export default function Composition({ apiUrl }) {
   const [rhymeScheme, setRhymeScheme] = useState("");
   const [songToEdit, setSongToEdit] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [songLoading, setSongLoading] = useState(false);
 
   useEffect(() => {
     if (!editMode) {
@@ -96,8 +76,6 @@ export default function Composition({ apiUrl }) {
           ? newSongOrUpdateFunction(prevSong)
           : newSongOrUpdateFunction;
 
-      console.log("Updated song:", updatedSong);
-
       const formattedSong = updatedSong
         .map((component) => [
           `[${component.component.toUpperCase()}]`,
@@ -115,6 +93,7 @@ export default function Composition({ apiUrl }) {
 
   const addNewLine = async () => {
     setNewLineLoading(true);
+    setEditMode(true);
 
     const flattenedSong = song.flatMap((component) => [
       `[${component.component.toUpperCase()}]`,
@@ -131,7 +110,6 @@ export default function Composition({ apiUrl }) {
     });
 
     const update = (prevSong) => {
-      console.log("prev ", prevSong);
       const updatedSong = [...prevSong];
       const lastComponent = updatedSong[updatedSong.length - 1];
 
@@ -144,7 +122,7 @@ export default function Composition({ apiUrl }) {
       } else {
         console.warn("New line is already present, not adding again.");
       }
-      console.log("prev ", updatedSong);
+
       return updatedSong;
     };
 
@@ -198,30 +176,29 @@ export default function Composition({ apiUrl }) {
         setSongTitle={setSongTitle}
         setSongDescription={setSongDescription}
         setSongAndUpdateEdit={setSongAndUpdateEdit}
-        setSongLoading={setSongLoading}
         apiUrl={apiUrl}
-        rhymeScheme={rhymeScheme}
+        setComponents={setComponents}
+        setSongLoading={setSongLoading}
       />
       <CompositionControls
         setComponents={setComponents}
         ComponentDefault={ComponentDefault}
         apiUrl={apiUrl}
       >
-        {components.map((component, i) => {
-          console.log(component);
-          return (
-            <SongComponent
-              key={i}
-              component={component}
-              i={i}
-              setComponents={setComponents}
-              songLength={components.length}
-            />
-          );
-        })}
+        {components.length > 0
+          ? components.map((component, index) => (
+              <SongComponent
+                key={index}
+                component={component}
+                i={index}
+                setComponents={setComponents}
+                songLength={components.length}
+              />
+            ))
+          : null}
       </CompositionControls>
       {/* SONG DISPLAY */}
-      <div className="flex flex-col justify-top items-left w-full text-left px-4">
+      <div className="flex flex-col justify-top items-left w-1/2 text-left px-4">
         <h1>Generated Song</h1>
         <button
           className="border hover:bg-white hover:text-black focus:border-yellow-400"
@@ -240,6 +217,7 @@ export default function Composition({ apiUrl }) {
         <div className="max-h-[90vh] overflow-y-scroll">
           <div className="flex flex-row w-full items-center justify-between pr-4">
             <Button
+              disabled={!editMode}
               className={
                 editMode
                   ? `text-red-400 font-extrabold my-4 px-2 border-2 border-red-400`
@@ -276,7 +254,7 @@ export default function Composition({ apiUrl }) {
                 }
               }}
             >
-              {editMode ? "Save Changes" : "Edit Lyrics"}
+              Save Changes
             </Button>
             <SongLibrary song={song} setSong={setSong} />
           </div>
@@ -284,6 +262,7 @@ export default function Composition({ apiUrl }) {
           <MDEditorWithPopup
             value={songToEdit}
             onChange={(value) => onChange(value)}
+            songLoading={songLoading}
           />
           <div className="flex flex-col">
             <button

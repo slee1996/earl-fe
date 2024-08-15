@@ -89,13 +89,36 @@ const Popup = ({ word, onClose, song, onSuggestionClick }) => {
   );
 };
 
-const MDEditorWithPopup = ({ value, onChange }) => {
+const MDEditorWithPopup = ({ value, onChange, songLoading }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({
     word: "",
     position: { x: 0, y: 0 },
   });
   const editorRef = useRef(null);
+  const [loadingText, setLoadingText] = useState("");
+
+  useEffect(() => {
+    const rotatingString = "Loading...Loading...Loading...";
+    let index = 0;
+
+    if (songLoading) {
+      const interval = setInterval(() => {
+        setLoadingText((prev) => rotatingString.slice(0, index + 1));
+        index = (index + 1) % rotatingString.length;
+      }, 80);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingText("");
+    }
+  }, [songLoading]);
+
+  useEffect(() => {
+    if (songLoading) {
+      onChange(loadingText);
+    }
+  }, [loadingText, songLoading, onChange]);
 
   const handleRightClick = useCallback((event) => {
     event.preventDefault();

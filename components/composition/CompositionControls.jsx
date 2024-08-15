@@ -65,29 +65,14 @@ export default function CompositionControls({
         lines: parts[i + 1].trim().split("\n"),
       });
     }
-    console.log(parsedLyrics);
+
     return parsedLyrics;
   };
 
   return (
-    <div className="px-4">
+    <div className="w-1/4">
       <h1>Components</h1>
       <div className="flex flex-col space-y-2">
-        <button
-          className="border hover:bg-white hover:text-black px-2"
-          onClick={() => {
-            setComponents((currentVal) => [...currentVal, ComponentDefault]);
-          }}
-        >
-          Add Component
-        </button>
-        <button
-          className="border hover:bg-white hover:text-black px-2"
-          onClick={() => setComponents(SUNO_OPTIMAL)}
-        >
-          Max Suno Length
-        </button>
-
         <Dialog>
           <DialogTrigger className="border hover:bg-white hover:text-black px-2">
             Generate Structure from Existing Song
@@ -115,14 +100,12 @@ export default function CompositionControls({
                     type="submit"
                     onClick={async () => {
                       const lyrics = await fetchGeniusLink({ geniusLink });
-                      console.log(lyrics);
+
                       setSongLyrics(lyrics.join("\n"));
                     }}
                     className="border hover:bg-white hover:text-black px-2 py-1"
                   >
-                    {isGenerating
-                      ? "Generating..."
-                      : "Pull Song From Genius"}
+                    {isGenerating ? "Generating..." : "Pull Song From Genius"}
                   </button>
                   <sub>
                     *Paste a link from Genius in the input above to get your

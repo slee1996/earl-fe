@@ -10,29 +10,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { USER_PROMPTS as userPrompts } from "@/lib/constants/user-prompts";
+import {
+  USER_PROMPTS as userPrompts,
+  SYSTEM_PROMPTS as systemPrompts,
+} from "@/lib/constants";
 import { track } from "@vercel/analytics";
 
-const systemPrompts = {
-  popstar: "popstar",
-  rapper: "rapper",
-  electropopStar: "electropopStar",
-  rockstar: "rockstar",
-  countryArtist: "countryArtist",
-  custom: "custom",
-};
-
-export const SongComponent = ({
-  component,
-  i,
-  setComponents,
-  songLength,
-}) => {
+export const SongComponent = ({ component, i, setComponents, songLength }) => {
   const handleCustomSystemPromptChange = (i, e) => {
     const newSystemPrompt = e.target.value;
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i
+        i === index
           ? { ...component, customSystemPrompt: newSystemPrompt }
           : component
       )
@@ -42,7 +31,7 @@ export const SongComponent = ({
   const handleAddMeter = (i) => {
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i
+        i === index
           ? {
               ...component,
               meter: [...component.meter, [1, 0, 1, 0, 1, 0, 1, 0]],
@@ -55,7 +44,7 @@ export const SongComponent = ({
   const handleRemoveMeter = (i, j) => {
     setComponents((prevComponents) =>
       prevComponents.map((component, index) => {
-        if (index !== i) return component;
+        if (i !== index) return component;
         return {
           ...component,
           meter: component.meter.filter((_, rowIndex) => rowIndex !== j),
@@ -69,7 +58,7 @@ export const SongComponent = ({
 
     await setComponents((prevComponents) => {
       return prevComponents.map((component, index) => {
-        if (index !== i) return component;
+        if (i !== index) return component;
 
         const updatedMeter = component.meter.map((meterRow, rowIndex) => {
           if (rowIndex !== j) return meterRow;
@@ -99,7 +88,7 @@ export const SongComponent = ({
     const newLineLimit = parseInt(e.target.value, 10);
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i ? { ...component, lineLimit: newLineLimit } : component
+        i === index ? { ...component, lineLimit: newLineLimit } : component
       )
     );
   };
@@ -107,7 +96,7 @@ export const SongComponent = ({
   const handleRhymeSchemeChange = (e) => {
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i ? { ...component, rhymeScheme: e.target.value } : component
+        i === index ? { ...component, rhymeScheme: e.target.value } : component
       )
     );
   };
@@ -115,7 +104,7 @@ export const SongComponent = ({
   const handleMeterClick = (i, j, k) => {
     setComponents((prevComponents) => {
       return prevComponents.map((component, index) => {
-        if (index !== i) return component;
+        if (i !== index) return component;
 
         const updatedMeter = component.meter.map((meterRow, rowIndex) => {
           if (rowIndex !== j) return meterRow;
@@ -138,7 +127,7 @@ export const SongComponent = ({
     const newSystemPrompt = e.target.value;
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i
+        i === index
           ? { ...component, selectedSystemPrompt: newSystemPrompt }
           : component
       )
@@ -150,7 +139,7 @@ export const SongComponent = ({
     const newUserPrompt = e.target.value;
     setComponents((prevComponents) =>
       prevComponents.map((component, index) =>
-        index === i
+        i === index
           ? { ...component, selectedUserPrompt: newUserPrompt }
           : component
       )
@@ -211,7 +200,7 @@ export const SongComponent = ({
             ) : null}
           </div>
           <div>
-            Song Section:{" "}
+            Song Section:
             <select
               value={component.selectedUserPrompt}
               onChange={(e) => handleUserPromptChange(i, e)}
@@ -294,7 +283,7 @@ export const SongComponent = ({
         onClick={(event) => {
           event.preventDefault();
           setComponents((currentComponents) =>
-            currentComponents.filter((_, index) => index !== i)
+            currentComponents.filter((_, index) => i !== index)
           );
         }}
         disabled={songLength === 1}

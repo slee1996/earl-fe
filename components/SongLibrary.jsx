@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "./ui/button";
 import { db } from "@/lib/indexeddb/db";
 import {
@@ -11,16 +12,16 @@ import {
 import { useState, useEffect } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { toast } from "sonner";
+import { findItemById } from "@/lib/indexeddb/find-item-by-id";
 
 export const SongLibrary = ({ song, setSong }) => {
   const [savedSongs, setSavedSongs] = useState([]);
+  const fetchSongs = async () => {
+    const allSongs = await db.songs.toArray();
+    setSavedSongs(allSongs);
+  };
 
   useEffect(() => {
-    const fetchSongs = async () => {
-      const allSongs = await db.songs.toArray();
-      setSavedSongs(allSongs);
-    };
-
     fetchSongs();
   }, []);
 
@@ -32,10 +33,31 @@ export const SongLibrary = ({ song, setSong }) => {
   };
 
   const handleDeleteSong = async (id) => {
+    const songToDelete = await findItemById(id);
+
     await db.songs.delete(id);
     const updatedSongs = await db.songs.toArray();
+
     setSavedSongs(updatedSongs);
-    toast("Song Deleted!");
+
+    toast.warning("Song Deleted!", {
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          delete songToDelete.id;
+
+          await db.songs.add(songToDelete);
+          await fetchSongs();
+
+          toast.success("Deletion Reverted");
+        },
+        actionButtonStyle: {
+          backgroundColor: "#4CAF50",
+          color: "#fff",
+        },
+      },
+      duration: 2000,
+    });
   };
 
   return (
@@ -47,7 +69,9 @@ export const SongLibrary = ({ song, setSong }) => {
         Save Song to Profile
       </Button>
       <Dialog>
-        <DialogTrigger>View Saved Songs</DialogTrigger>
+        <DialogTrigger className="hover:bg-slate-300 hover:text-black rounded-l-none border-l">
+          View Saved Songs
+        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Saved Songs</DialogTitle>
@@ -55,13 +79,11 @@ export const SongLibrary = ({ song, setSong }) => {
               <ScrollArea className="max-h-[60vh] overflow-y-scroll">
                 {savedSongs.length > 0 ? (
                   savedSongs.map((e, index) => {
-                    console.log(e);
                     return (
                       <div key={index} className="mb-4">
                         <strong>
                           {e.title} {e.id}
                         </strong>
-                        {/* <pre className="whitespace-pre-wrap">{e.song.map(lyrics.join("\n")}</pre> */}
                         <pre className="whitespace-pre-wrap">
                           <ScrollArea className="max-h-[20vh] overflow-y-scroll">
                             {e.song &&

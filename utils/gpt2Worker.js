@@ -17,7 +17,6 @@ self.onmessage = async (event) => {
     );
 
     const result = generationOutput.map((item) => {
-      // Remove the original input from the generated text
       const generatedText = item.generated_text;
       const outputWithoutInput = generatedText
         .replace(`Complete these original song lyrics: ${input}`, "")

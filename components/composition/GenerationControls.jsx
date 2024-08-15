@@ -1,11 +1,14 @@
 "use client";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Switch } from "@/components/ui/switch";
 import { track } from "@vercel/analytics/react";
+import { Button } from "../ui/button";
+import { DEFAULT_COMPONENT, SUNO_OPTIMAL } from "@/lib/constants";
+import { useState } from "react";
 
 export default function GenerationControls({
   components,
@@ -16,9 +19,12 @@ export default function GenerationControls({
   setSongTitle,
   setSongDescription,
   setSongAndUpdateEdit,
-  setSongLoading,
   apiUrl,
+  setComponents,
+  setSongLoading
 }) {
+  const [enforcementChecked, setEnforcementChecked] = useState(false);
+
   const changeTitle = (e) => {
     return setSongTitle(e.target.value);
   };
@@ -29,7 +35,7 @@ export default function GenerationControls({
 
   const fetchData = async ({ songComponents }) => {
     track("Generate Song");
-    setSongLoading(true);
+    setSongLoading(true)
 
     const response = await fetch(`${apiUrl}generate-song`, {
       method: "POST",
@@ -46,14 +52,13 @@ export default function GenerationControls({
     });
     const song = await response.json();
 
-    setSongAndUpdateEdit(song); // Changed from setSong
-
-    return setSongLoading(false);
+    setSongLoading(false)
+    return setSongAndUpdateEdit(song); // Changed from setSong
   };
 
   const fetchDataWithEnforcement = async ({ songComponents }) => {
     track("Generate Song With Enforcement");
-    setSongLoading(true);
+    setSongLoading(true)
 
     const response = await fetch(`${apiUrl}generate-song-with-enforcement`, {
       method: "POST",
@@ -70,34 +75,49 @@ export default function GenerationControls({
     });
     const song = await response.json();
 
-    setSongAndUpdateEdit(song); // Changed from setSong
-
-    return setSongLoading(false);
+    setSongLoading(false)
+    return setSongAndUpdateEdit(song);
   };
 
   return (
-    <div>
+    <div className="px-4 w-1/4">
       <div className="flex flex-col space-y-4 mt-4">
-        <button
-          className="border hover:bg-white hover:text-black"
-          onClick={() =>
-            fetchData({
-              songComponents: components,
-            })
-          }
-        >
-          Generate song
-        </button>
-        <button
-          className="border hover:bg-white hover:text-black"
-          onClick={() =>
-            fetchDataWithEnforcement({
-              songComponents: components,
-            })
-          }
-        >
-          Generate song with enforcement
-        </button>
+        <div className="flex flex-row justify-between items-center">
+          <Button
+            className="border hover:bg-white hover:text-black"
+            onClick={() =>
+              enforcementChecked
+                ? fetchDataWithEnforcement({
+                    songComponents: components,
+                  })
+                : fetchData({
+                    songComponents: components,
+                  })
+            }
+          >
+            Generate song
+          </Button>
+          <span className="flex flex-row justify-between items-center space-x-1">
+            <HoverCard>
+              <HoverCardTrigger className="underline cursor-pointer text-blue-200">
+                Enforce Constraints
+              </HoverCardTrigger>
+              <HoverCardContent className="font-light">
+                Toggling Enforce Constraints on will enforce meter and rhyme
+                restrictions during the generation process with programmatic
+                metric detection and parsing. It takes longer, but provides
+                stronger control than the simple prompting of generating without
+                it.
+              </HoverCardContent>
+            </HoverCard>
+            <Switch
+              id="enforce-constraints"
+              value={enforcementChecked}
+              onClick={() => setEnforcementChecked((currentVal) => !currentVal)}
+            />
+          </span>
+        </div>
+
         <select
           value={selectedApi}
           onChange={(e) => setSelectedApi(e.target.value)}
@@ -126,25 +146,16 @@ export default function GenerationControls({
           value={songDescription}
           onChange={changeDescription}
         />
-        <Accordion
-          className={`border border-white p-4 m-5 w-80`}
-          type="single"
-          collapsible
-          defaultValue="true"
+        <Button
+          onClick={() => {
+            setComponents((currentVal) => [...currentVal, DEFAULT_COMPONENT]);
+          }}
         >
-          <AccordionItem value="item-1">
-            <AccordionTrigger>
-              &quot;Generate Song With Enforcement&quot; explanation
-            </AccordionTrigger>
-            <AccordionContent>
-              &quot;Generate Song With Enforcement&quot; will enforce meter
-              restrictions during the generation process with programmattic
-              metric detection and parsing. It takes longer, but provides
-              stronger control than the simple prompting of generic
-              &quot;Generate Song&quot;
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+          Add Component
+        </Button>
+        <Button onClick={() => setComponents(SUNO_OPTIMAL)}>
+          Max Suno Length
+        </Button>
       </div>
     </div>
   );
